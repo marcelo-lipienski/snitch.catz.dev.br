@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 use App\Models\Report;
+use App\Jobs\AnalyzeRepositoryJob;
+use Illuminate\Support\Facades\Queue;
 
 class RepositoryAnalysisTest extends TestCase
 {
@@ -16,7 +18,28 @@ class RepositoryAnalysisTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        File::deleteDirectory(storage_path('app/temp_repos'));
+        File::deleteDirectory(storage_path('app/reports'));
+    }
+
+    public function test_analyze_dispatches_job(): void
+    {
+        Queue::fake();
+        $url = 'https://github.com/laravel/laravel';
+        
+        Process::fake([
+            "git ls-remote --exit-code {$url}" => Process::result('', '', 0),
+        ]);
+
+        $response = $this->postJson('/analyze', [
+            'url' => $url
+        ]);
+
+        $response->assertStatus(200);
+        
+        $report = Report::first();
+        Queue::assertPushed(AnalyzeRepositoryJob::class, function ($job) use ($report) {
+            return $job->report->id === $report->id;
+        });
     }
 
     public function test_analyze_requires_url(): void
@@ -47,69 +70,14 @@ class RepositoryAnalysisTest extends TestCase
         $response->assertJson(['valid' => false, 'error' => 'Invalid git repository']);
     }
 
-    public function test_analyze_fails_for_repository_without_php_files(): void
-    {
-        $url = 'https://github.com/user/js-only-repo';
-        Process::fake([
-            '*' => function ($process) {
-                $command = is_array($process->command) ? implode(' ', $process->command) : $process->command;
-                if (str_contains($command, 'ls-tree')) {
-                    return Process::result("README.md\npackage.json", '', 0);
-                }
-                return Process::result('', '', 0);
-            },
-        ]);
-
-        $response = $this->postJson('/analyze', [
-            'url' => $url
-        ]);
-
-        $response->assertStatus(422);
-        $response->assertJson(['valid' => false, 'error' => 'No PHP files found']);
-    }
-
-    public function test_analyze_succeeds_for_repository_with_php_files(): void
-    {
-        $url = 'https://github.com/laravel/laravel';
-        Process::fake([
-            '*' => function ($process) {
-                $command = is_array($process->command) ? implode(' ', $process->command) : $process->command;
-                if (str_contains($command, 'ls-tree')) {
-                    return Process::result("index.php\nsrc/App.php\nREADME.md", '', 0);
-                }
-                return Process::result('', '', 0);
-            },
-        ]);
-
-        $response = $this->postJson('/analyze', [
-            'url' => $url
-        ]);
-
-        $response->assertStatus(200);
-        $response->assertJson(['valid' => true]);
-        
-        $report = Report::first();
-        $this->assertNotNull($report);
-        $this->assertEquals($url, $report->repository_url);
-        $response->assertJsonFragment(['redirect_url' => route('report.show', ['uuid' => $report->uuid])]);
-    }
-
     public function test_analyze_handles_url_without_protocol(): void
     {
+        Queue::fake();
         $inputUrl = 'github.com/marcelo-lipienski/snitch.catz.dev.br';
         $fullUrl = 'https://' . $inputUrl;
 
         Process::fake([
-            '*' => function ($process) use ($fullUrl) {
-                $command = is_array($process->command) ? implode(' ', $process->command) : $process->command;
-                if (str_contains($command, $fullUrl) || str_contains($command, 'ls-tree')) {
-                    if (str_contains($command, 'ls-tree')) {
-                        return Process::result("index.php\nREADME.md", '', 0);
-                    }
-                    return Process::result('', '', 0);
-                }
-                return Process::result('', '', 0);
-            },
+            "git ls-remote --exit-code {$fullUrl}" => Process::result('', '', 0),
         ]);
 
         $response = $this->postJson('/analyze', [
@@ -117,10 +85,10 @@ class RepositoryAnalysisTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $response->assertJson(['valid' => true]);
         
         $report = Report::first();
         $this->assertNotNull($report);
         $this->assertEquals($fullUrl, $report->repository_url);
+        Queue::assertPushed(AnalyzeRepositoryJob::class);
     }
 }
