@@ -164,6 +164,7 @@
         analyzeBtn.disabled = true;
         analyzeBtn.innerHTML = 'Analyzing...';
         errorDiv.classList.add('hidden');
+        errorDiv.innerText = 'Invalid link';
 
         try {
             const response = await fetch('/analyze', {
@@ -176,10 +177,13 @@
             });
 
             if (!response.ok) {
+                const result = await response.json();
+                errorDiv.innerText = result.error + (result.details ? ': ' + result.details : '');
                 errorDiv.classList.remove('hidden');
             } else {
                 const result = await response.json();
                 if (!result.valid) {
+                    errorDiv.innerText = result.error + (result.details ? ': ' + result.details : '');
                     errorDiv.classList.remove('hidden');
                 } else {
                     // Success, maybe redirect or show results
