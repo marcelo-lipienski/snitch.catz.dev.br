@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use App\Models\Report;
+use App\Jobs\AnalyzeRepositoryJob;
 
 class RepositoryController extends Controller
 {
@@ -23,14 +24,8 @@ class RepositoryController extends Controller
             $url = 'https://' . $url;
         }
 
-        $baseTempPath = storage_path('app/temp_repos');
-        File::ensureDirectoryExists($baseTempPath);
-        
-        $tempDir = $baseTempPath . '/' . Str::random(32);
-
         try {
-            // 1. Verify if it's a valid git repository
-            // Use array for Process::run to avoid shell injection and disable terminal prompts
+            // 1. Verify if it's a valid git repository (Quick check)
             $lsRemote = Process::env(['GIT_TERMINAL_PROMPT' => '0'])
                 ->run(['git', 'ls-remote', '--exit-code', $url]);
 
@@ -38,50 +33,23 @@ class RepositoryController extends Controller
                 return response()->json(['valid' => false, 'error' => 'Invalid git repository'], 422);
             }
 
-            // 2. Check for PHP files
-            // Using a bare clone with blob:none filter to minimize data transfer
-            $clone = Process::env(['GIT_TERMINAL_PROMPT' => '0'])
-                ->run(['git', 'clone', '--depth', '1', '--bare', '--filter=blob:none', $url, $tempDir]);
-
-            if (!$clone->successful()) {
-                return response()->json([
-                    'valid' => false, 
-                    'error' => 'Failed to clone repository metadata',
-                    'details' => $clone->errorOutput()
-                ], 422);
-            }
-
-            $lsTree = Process::run(['git', '--git-dir=' . $tempDir, 'ls-tree', '-r', 'HEAD', '--name-only']);
-            $files = explode("\n", $lsTree->output());
-            
-            $hasPhpFile = false;
-            foreach ($files as $file) {
-                if (Str::endsWith(trim($file), '.php')) {
-                    $hasPhpFile = true;
-                    break;
-                }
-            }
-
-            if (!$hasPhpFile) {
-                return response()->json(['valid' => false, 'error' => 'No PHP files found'], 422);
-            }
-
+            // Create report record
             $report = Report::create([
                 'uuid' => (string) Str::uuid(),
                 'repository_url' => $url,
                 'status' => 'pending',
             ]);
 
+            // Dispatch analysis job
+            AnalyzeRepositoryJob::dispatch($report);
+
             return response()->json([
                 'valid' => true,
                 'redirect_url' => route('report.show', ['uuid' => $report->uuid])
             ]);
 
-        } finally {
-            // Cleanup
-            if (file_exists($tempDir)) {
-                Process::run(['rm', '-rf', $tempDir]);
-            }
+        } catch (\Exception $e) {
+            return response()->json(['valid' => false, 'error' => 'An error occurred during validation: ' . $e->getMessage()], 500);
         }
     }
 }

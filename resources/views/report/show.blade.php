@@ -78,7 +78,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                         <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
-                            <div class="text-sm font-bold text-accent-orange">{{ ucfirst($report->status) }}</div>
+                            <div id="status-text" class="text-sm font-bold text-accent-orange">{{ ucfirst($report->status) }}</div>
                         </div>
                         <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Report ID</div>
@@ -110,5 +110,31 @@
         </div>
     </footer>
 </div>
+
+<script>
+    const uuid = "{{ $report->uuid }}";
+    const pollStatus = async () => {
+        try {
+            const response = await fetch(`/report/${uuid}/status`);
+            const data = await response.json();
+            
+            if (data.is_completed) {
+                window.location.reload();
+            } else if (data.status === 'failed') {
+                document.getElementById('status-text').innerText = 'Failed';
+                document.getElementById('status-text').classList.add('text-red-500');
+            } else {
+                setTimeout(pollStatus, 3000); // Poll every 3 seconds
+            }
+        } catch (error) {
+            console.error('Error polling status:', error);
+            setTimeout(pollStatus, 5000);
+        }
+    };
+
+    if ("{{ $report->status }}" !== 'completed' && "{{ $report->status }}" !== 'failed') {
+        pollStatus();
+    }
+</script>
 </body>
 </html>
