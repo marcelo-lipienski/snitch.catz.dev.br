@@ -39,7 +39,11 @@ class RepositoryController extends Controller
                 ->run(['git', 'clone', '--depth', '1', '--bare', '--filter=blob:none', $url, $tempDir]);
 
             if (!$clone->successful()) {
-                return response()->json(['valid' => false, 'error' => 'Failed to clone repository metadata'], 422);
+                return response()->json([
+                    'valid' => false, 
+                    'error' => 'Failed to clone repository metadata',
+                    'details' => $clone->errorOutput()
+                ], 422);
             }
 
             $lsTree = Process::run(['git', '--git-dir=' . $tempDir, 'ls-tree', '-r', 'HEAD', '--name-only']);
