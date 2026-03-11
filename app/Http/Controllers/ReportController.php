@@ -16,8 +16,11 @@ class ReportController extends Controller
             $path = storage_path("app/reports/{$uuid}/snitch-report/index.html");
 
             if (File::exists($path)) {
-                return response()->file($path, [
-                    'Content-Type' => 'text/html',
+                $content = File::get($path);
+                $content = $this->injectLinkFixer($content, $uuid);
+                
+                return response($content, 200, [
+                    'Content-Type' => 'text/html; charset=utf-8',
                 ]);
             }
         }
@@ -33,13 +36,37 @@ class ReportController extends Controller
             $path = storage_path("app/reports/{$uuid}/snitch-report/business.html");
 
             if (File::exists($path)) {
-                return response()->file($path, [
-                    'Content-Type' => 'text/html',
+                $content = File::get($path);
+                $content = $this->injectLinkFixer($content, $uuid);
+
+                return response($content, 200, [
+                    'Content-Type' => 'text/html; charset=utf-8',
                 ]);
             }
         }
 
         return abort(404, 'Business report not found or analysis not completed.');
+    }
+
+    private function injectLinkFixer($content, $uuid)
+    {
+        $script = <<<EOT
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const deepDiveLink = document.getElementById('nav-deep-dive');
+                const businessLink = document.getElementById('nav-business');
+                
+                if (deepDiveLink) {
+                    deepDiveLink.setAttribute('href', '/report/{$uuid}');
+                }
+                if (businessLink) {
+                    businessLink.setAttribute('href', '/report/{$uuid}/business');
+                }
+            });
+        </script>
+        EOT;
+
+        return str_replace('</body>', $script . '</body>', $content);
     }
 
     public function status($uuid)
