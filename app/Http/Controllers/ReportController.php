@@ -13,12 +13,7 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $file = $request->query('file', 'index.html');
-            if (!in_array($file, ['index.html', 'business.html'])) {
-                $file = 'index.html';
-            }
-
-            $path = storage_path("app/reports/{$uuid}/snitch-report/{$file}");
+            $path = storage_path("app/reports/{$uuid}/snitch-report/index.html");
 
             if (File::exists($path)) {
                 return response()->file($path, [
@@ -28,6 +23,23 @@ class ReportController extends Controller
         }
 
         return view('report.show', compact('report'));
+    }
+
+    public function business($uuid)
+    {
+        $report = Report::where('uuid', $uuid)->firstOrFail();
+
+        if ($report->status === 'completed') {
+            $path = storage_path("app/reports/{$uuid}/snitch-report/business.html");
+
+            if (File::exists($path)) {
+                return response()->file($path, [
+                    'Content-Type' => 'text/html',
+                ]);
+            }
+        }
+
+        return abort(404, 'Business report not found or analysis not completed.');
     }
 
     public function status($uuid)
