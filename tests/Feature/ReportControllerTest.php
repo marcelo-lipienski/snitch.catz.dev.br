@@ -48,7 +48,7 @@ class ReportControllerTest extends TestCase
 
         $path = storage_path("app/reports/{$uuid}/snitch-report");
         File::ensureDirectoryExists($path);
-        File::put("{$path}/business.html", "<html><body>Business</body></html>");
+        File::put("{$path}/business", "<html><body>Business</body></html>");
 
         $response = $this->get("/report/{$uuid}/business");
 

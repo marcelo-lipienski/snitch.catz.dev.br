@@ -33,7 +33,7 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $path = storage_path("app/reports/{$uuid}/snitch-report/business.html");
+            $path = storage_path("app/reports/{$uuid}/snitch-report/business");
 
             if (File::exists($path)) {
                 $content = File::get($path);
