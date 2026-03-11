@@ -215,12 +215,13 @@ return [
     'environments' => [
         'production' => [
             'supervisor-1' => [
+                'connection' => 'redis',
+                'queue' => ['default', 'analyze'],
+                'balance' => 'auto', // Horizon will balance workers as needed
                 'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
-                'balanceCooldown' => 3,
+                'tries' => 3,
             ],
         ],
-
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,
