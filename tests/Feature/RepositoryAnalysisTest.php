@@ -4,11 +4,18 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class RepositoryAnalysisTest extends TestCase
 {
     use WithoutMiddleware;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        File::deleteDirectory(storage_path('app/temp_repos'));
+    }
 
     public function test_analyze_requires_url(): void
     {

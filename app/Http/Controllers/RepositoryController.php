@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\File;
 
 class RepositoryController extends Controller
 {
@@ -21,7 +22,10 @@ class RepositoryController extends Controller
             $url = 'https://' . $url;
         }
 
-        $tempDir = storage_path('app/temp_repos/' . Str::random(32));
+        $baseTempPath = storage_path('app/temp_repos');
+        File::ensureDirectoryExists($baseTempPath);
+        
+        $tempDir = $baseTempPath . '/' . Str::random(32);
 
         try {
             // 1. Verify if it's a valid git repository
