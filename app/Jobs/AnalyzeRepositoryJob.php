@@ -43,9 +43,20 @@ class AnalyzeRepositoryJob implements ShouldQueue
 
         try {
             // 1. Clone the repository
-            // We clone the default branch with depth 1.
+            // -c core.hooksPath=/dev/null: ensure no hooks are executed
+            // --depth 1: shallow clone
+            // --no-checkout: we might want to check it out later, but clone --depth 1 performs checkout by default.
+            // Using -c core.hooksPath=/dev/null is the primary defense against hooks.
             $clone = Process::env(['GIT_TERMINAL_PROMPT' => '0'])
-                ->run(['git', 'clone', '--depth', '1', $url, $repoPath]);
+                ->run([
+                    'git', 
+                    '-c', 'core.hooksPath=/dev/null',
+                    'clone', 
+                    '--depth', '1', 
+                    '--quiet',
+                    $url, 
+                    $repoPath
+                ]);
 
             if (!$clone->successful()) {
                 Log::error("Failed to clone repository for report {$uuid}: " . $clone->errorOutput());
@@ -54,7 +65,12 @@ class AnalyzeRepositoryJob implements ShouldQueue
             }
 
             // 2. Verify the commit hash we actually got
-            $getHash = Process::path($repoPath)->run(['git', 'rev-parse', 'HEAD']);
+            $getHash = Process::path($repoPath)->run([
+                'git', 
+                '-c', 'core.hooksPath=/dev/null',
+                'rev-parse', 
+                'HEAD'
+            ]);
             $actualHash = trim($getHash->output());
 
             if ($actualHash !== $this->report->commit_hash) {
