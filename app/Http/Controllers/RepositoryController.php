@@ -11,10 +11,16 @@ class RepositoryController extends Controller
     public function analyze(Request $request)
     {
         $request->validate([
-            'url' => ['required', 'string', 'url'],
+            'url' => ['required', 'string'],
         ]);
 
         $url = $request->input('url');
+
+        // Automatically prepend https:// if no protocol is provided
+        if (!preg_match('/^https?:\/\//i', $url) && !preg_match('/^git@/i', $url)) {
+            $url = 'https://' . $url;
+        }
+
         $tempDir = storage_path('app/temp_repos/' . Str::random(32));
 
         try {
