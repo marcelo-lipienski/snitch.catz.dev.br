@@ -24,12 +24,14 @@ class ReportControllerTest extends TestCase
 
         $path = storage_path("app/reports/{$uuid}/snitch-report");
         File::ensureDirectoryExists($path);
-        File::put("{$path}/index.html", "<html>Index</html>");
+        File::put("{$path}/index.html", "<html><body>Index</body></html>");
 
         $response = $this->get("/report/{$uuid}");
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'text/html; charset=utf-8');
+        $response->assertSee('/report/' . $uuid);
+        $response->assertSee('nav-deep-dive');
         
         File::deleteDirectory(storage_path("app/reports/{$uuid}"));
     }
@@ -46,12 +48,14 @@ class ReportControllerTest extends TestCase
 
         $path = storage_path("app/reports/{$uuid}/snitch-report");
         File::ensureDirectoryExists($path);
-        File::put("{$path}/business.html", "<html>Business</html>");
+        File::put("{$path}/business.html", "<html><body>Business</body></html>");
 
         $response = $this->get("/report/{$uuid}/business");
 
         $response->assertStatus(200);
         $response->assertHeader('Content-Type', 'text/html; charset=utf-8');
+        $response->assertSee('/report/' . $uuid . '/business');
+        $response->assertSee('nav-business');
         
         File::deleteDirectory(storage_path("app/reports/{$uuid}"));
     }
