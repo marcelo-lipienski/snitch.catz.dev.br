@@ -176,12 +176,12 @@
                 body: JSON.stringify({ url: repoUrl })
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                const result = await response.json();
                 errorDiv.innerText = result.error + (result.details ? ': ' + result.details : '');
                 errorDiv.classList.remove('hidden');
             } else {
-                const result = await response.json();
                 if (!result.valid) {
                     errorDiv.innerText = result.error + (result.details ? ': ' + result.details : '');
                     errorDiv.classList.remove('hidden');
