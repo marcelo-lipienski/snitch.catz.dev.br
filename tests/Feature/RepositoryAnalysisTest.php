@@ -79,4 +79,30 @@ class RepositoryAnalysisTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson(['valid' => true]);
     }
+
+    public function test_analyze_handles_url_without_protocol(): void
+    {
+        $inputUrl = 'github.com/marcelo-lipienski/snitch.catz.dev.br';
+        $fullUrl = 'https://' . $inputUrl;
+
+        Process::fake([
+            '*' => function ($process) use ($fullUrl) {
+                $command = is_array($process->command) ? implode(' ', $process->command) : $process->command;
+                if (str_contains($command, $fullUrl) || str_contains($command, 'ls-tree')) {
+                    if (str_contains($command, 'ls-tree')) {
+                        return Process::result("index.php\nREADME.md", '', 0);
+                    }
+                    return Process::result('', '', 0);
+                }
+                return Process::result('', '', 0);
+            },
+        ]);
+
+        $response = $this->postJson('/analyze', [
+            'url' => $inputUrl
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['valid' => true]);
+    }
 }
