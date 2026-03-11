@@ -58,7 +58,7 @@ class AnalyzeRepositoryJob implements ShouldQueue
             $uid = posix_getuid();
             $gid = posix_getgid();
 
-            $docker = Process::timeout(600) // 10 minutes timeout
+            $docker = Process::timeout(90) // 90 seconds timeout
                 ->run([
                     'docker', 'run', '--rm',
                     '--user', "{$uid}:{$gid}",
