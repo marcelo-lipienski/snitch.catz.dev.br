@@ -78,15 +78,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
                         <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
-                            <div id="status-text" class="text-sm font-bold text-accent-orange">{{ ucfirst($report->status) }}</div>
+                            <div id="status-text" class="text-sm font-bold {{ $report->status === 'failed' ? 'text-red-500' : 'text-primary' }}">{{ ucfirst($report->status) }}</div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Commit Hash</div>
+                            <div class="text-sm font-bold text-slate-600 dark:text-slate-300 truncate" title="{{ $report->commit_hash }}">{{ $report->commit_hash ?? 'N/A' }}</div>
                         </div>
                         <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Report ID</div>
                             <div class="text-sm font-bold text-slate-600 dark:text-slate-300 truncate">{{ $report->uuid }}</div>
-                        </div>
-                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Files Found</div>
-                            <div class="text-sm font-bold text-slate-600 dark:text-slate-300">Scanning...</div>
                         </div>
                     </div>
                 </div>

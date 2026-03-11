@@ -43,7 +43,7 @@ class AnalyzeRepositoryJob implements ShouldQueue
 
         try {
             // 1. Clone the repository
-            // GIT_TERMINAL_PROMPT=0 to prevent hanging
+            // We clone the default branch with depth 1.
             $clone = Process::env(['GIT_TERMINAL_PROMPT' => '0'])
                 ->run(['git', 'clone', '--depth', '1', $url, $repoPath]);
 
@@ -53,7 +53,25 @@ class AnalyzeRepositoryJob implements ShouldQueue
                 return;
             }
 
-            // 2. Run Snitch Docker image
+            // 2. Verify the commit hash we actually got
+            $getHash = Process::path($repoPath)->run(['git', 'rev-parse', 'HEAD']);
+            $actualHash = trim($getHash->output());
+
+            if ($actualHash !== $this->report->commit_hash) {
+                // If the hash changed since the job was dispatched, update the report.
+                // Note: This might fail if a report for $actualHash already exists due to the unique constraint.
+                try {
+                    $this->report->update(['commit_hash' => $actualHash]);
+                } catch (\Exception $e) {
+                    // If update fails (likely unique constraint), it means another report for this hash already exists.
+                    // We can mark this report as "duplicate" or just fail it.
+                    Log::info("Report {$uuid} for {$url} found a newer hash {$actualHash} which already has a report. Skipping.");
+                    $this->report->update(['status' => 'failed']); // Or a new status like 'duplicate'
+                    return;
+                }
+            }
+
+            // 3. Run Snitch Docker image
             // Command: docker run --rm --user $(id -u):$(id -g) -v $(pwd):/data -v $(pwd)/snitch-report:/reports mlipienski/snitch
             $uid = posix_getuid();
             $gid = posix_getgid();

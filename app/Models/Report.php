@@ -9,6 +9,7 @@ class Report extends Model
     protected $fillable = [
         'uuid',
         'repository_url',
+        'commit_hash',
         'status',
     ];
 }
