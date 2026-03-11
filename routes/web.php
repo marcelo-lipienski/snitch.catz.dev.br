@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\RepositoryController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -8,3 +9,4 @@ Route::get('/', function () {
 });
 
 Route::post('/analyze', [RepositoryController::class, 'analyze']);
+Route::get('/report/{uuid}', [ReportController::class, 'show'])->name('report.show');
