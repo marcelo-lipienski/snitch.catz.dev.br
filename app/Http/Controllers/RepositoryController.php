@@ -27,8 +27,17 @@ class RepositoryController extends Controller
 
         try {
             // 1. Verify if it's a valid git repository and fetch latest commit hash (Quick check)
+            // -c core.hooksPath=/dev/null: Ensure no hooks are executed
+            // --config protocol.allow=always: standard protocols (though we restrict to http(s)/git@ above)
             $lsRemote = Process::env(['GIT_TERMINAL_PROMPT' => '0'])
-                ->run(['git', 'ls-remote', $url, 'HEAD']);
+                ->run([
+                    'git', 
+                    '-c', 'core.hooksPath=/dev/null',
+                    'ls-remote', 
+                    '--quiet',
+                    $url, 
+                    'HEAD'
+                ]);
 
             if (!$lsRemote->successful() || empty($lsRemote->output())) {
                 return response()->json(['valid' => false, 'error' => 'Invalid git repository or branch'], 422);
