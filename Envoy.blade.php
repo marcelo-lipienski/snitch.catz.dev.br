@@ -15,6 +15,7 @@
     run_migrations
     optimize_laravel
     activate_release
+    restart_queues
     clean_old_releases
 @endstory
 
@@ -58,7 +59,7 @@
     echo "Injecting pre-built assets..."
     mkdir -p {{ $new_release_dir }}/public/build
     # Check if files exist before copying to avoid errors
-    if [ -d "{{ $path }}/shared_build" ]; then
+    if [ "$(ls -A {{ $path }}/shared_build 2>/dev/null)" ]; then
         cp -R {{ $path }}/shared_build/* {{ $new_release_dir }}/public/build/
     fi
 @endtask
@@ -68,11 +69,17 @@
     ln -nfs {{ $new_release_dir }} {{ $app_dir }}
 @endtask
 
+@task('restart_queues')
+    echo "Restarting Horizon..."
+    cd {{ $app_dir }}
+    php artisan horizon:terminate
+@endtask
+
 @task('clean_old_releases')
     echo "Cleaning up old releases..."
     cd {{ $releases_dir }}
     # Deletes all but the 5 most recent releases
-    ls -dt */ | tail -n +6 | xargs -d "\n" rm -rf
+    ls -dt */ | tail -n +6 | xargs -r rm -rf
 @endtask
 
 @task('rollback')
