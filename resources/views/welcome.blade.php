@@ -186,8 +186,8 @@
                     errorDiv.innerText = result.error + (result.details ? ': ' + result.details : '');
                     errorDiv.classList.remove('hidden');
                 } else {
-                    // Success, maybe redirect or show results
-                    console.log('Valid repository!');
+                    // Success, redirect to the report page
+                    window.location.href = result.redirect_url;
                 }
             }
         } catch (error) {

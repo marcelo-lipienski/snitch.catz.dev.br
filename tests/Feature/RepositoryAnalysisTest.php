@@ -3,13 +3,15 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
+use App\Models\Report;
 
 class RepositoryAnalysisTest extends TestCase
 {
-    use WithoutMiddleware;
+    use WithoutMiddleware, RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -85,6 +87,11 @@ class RepositoryAnalysisTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson(['valid' => true]);
+        
+        $report = Report::first();
+        $this->assertNotNull($report);
+        $this->assertEquals($url, $report->repository_url);
+        $response->assertJsonFragment(['redirect_url' => route('report.show', ['uuid' => $report->uuid])]);
     }
 
     public function test_analyze_handles_url_without_protocol(): void
@@ -111,5 +118,9 @@ class RepositoryAnalysisTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson(['valid' => true]);
+        
+        $report = Report::first();
+        $this->assertNotNull($report);
+        $this->assertEquals($fullUrl, $report->repository_url);
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
+use App\Models\Report;
 
 class RepositoryController extends Controller
 {
@@ -65,7 +66,16 @@ class RepositoryController extends Controller
                 return response()->json(['valid' => false, 'error' => 'No PHP files found'], 422);
             }
 
-            return response()->json(['valid' => true]);
+            $report = Report::create([
+                'uuid' => (string) Str::uuid(),
+                'repository_url' => $url,
+                'status' => 'pending',
+            ]);
+
+            return response()->json([
+                'valid' => true,
+                'redirect_url' => route('report.show', ['uuid' => $report->uuid])
+            ]);
 
         } finally {
             // Cleanup
