@@ -121,13 +121,16 @@
                         <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-400">
                             <span class="material-symbols-outlined">link</span>
                         </div>
-                        <input class="w-full bg-slate-50 dark:bg-slate-800/50 border-none focus:ring-2 focus:ring-primary/50 rounded-lg py-4 pl-12 pr-4 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium" placeholder="Paste your GitHub or GitLab URL here..." type="text"/>
+                        <input id="repo-input" class="w-full bg-slate-50 dark:bg-slate-800/50 border-none focus:ring-2 focus:ring-primary/50 rounded-lg py-4 pl-12 pr-4 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 font-medium" placeholder="Paste your GitHub or GitLab URL here..." type="text"/>
                     </div>
-                    <button class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-primary/30">
+                    <button id="analyze-btn" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-lg shadow-primary/30">
                         Analyze Repository
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </button>
                 </div>
+            </div>
+            <div id="error-message" class="text-red-500 text-sm mt-2 hidden text-left w-full max-w-4xl px-2">
+                Invalid link
             </div>
             <!-- Social Proof / Support -->
         </div>
@@ -147,5 +150,49 @@
         </div>
     </footer>
 </div>
+<script>
+    document.getElementById('analyze-btn').addEventListener('click', async () => {
+        const repoUrl = document.getElementById('repo-input').value;
+        const errorDiv = document.getElementById('error-message');
+        const analyzeBtn = document.getElementById('analyze-btn');
+
+        if (!repoUrl) {
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = 'Analyzing...';
+        errorDiv.classList.add('hidden');
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ url: repoUrl })
+            });
+
+            if (!response.ok) {
+                errorDiv.classList.remove('hidden');
+            } else {
+                const result = await response.json();
+                if (!result.valid) {
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    // Success, maybe redirect or show results
+                    console.log('Valid repository!');
+                }
+            }
+        } catch (error) {
+            errorDiv.classList.remove('hidden');
+        } finally {
+            analyzeBtn.disabled = false;
+            analyzeBtn.innerHTML = 'Analyze Repository <span class="material-symbols-outlined">arrow_forward</span>';
+        }
+    });
+</script>
 </body>
 </html>
