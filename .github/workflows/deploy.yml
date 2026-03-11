@@ -1,0 +1,78 @@
+name: Deploy to Production
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # Allows manual triggering
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g. v1.0.0)'
+        required: true
+        default: 'master'
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4 # Combined into one step
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --prefer-dist
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # This is the magic line for caching
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Build Assets (Vite/NPM)
+        run: |
+          # npm ci is faster and more reliable than 'npm install' for CI/CD
+          npm ci
+          npm run build
+
+      - name: Start SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          # Ensure this secret name matches exactly what you saved in GitHub
+          ssh-private-key: ${{ secrets.DEPLOY_SSH_SECRET }}
+
+      - name: Add Server to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.DEPLOY_IP }} >> ~/.ssh/known_hosts
+
+      - name: Upload Build Assets to Server
+        run: |
+          # Create a temporary folder on the server to hold the latest build
+          ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_IP }} "mkdir -p ${{ secrets.DEPLOY_PATH }}/shared_build"
+          # Sync the compiled assets from GitHub to the server
+          scp -r public/build/* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_IP }}:${{ secrets.DEPLOY_PATH }}/shared_build/
+
+      - name: Execute Envoy Deployment
+        run: |
+          DEPLOY_TAG=${{ github.event.inputs.tag || github.event.release.tag_name }}
+
+          ./vendor/bin/envoy run deploy \
+            --tag=$DEPLOY_TAG \
+            --server=${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_IP }} \
+            --path=${{ secrets.DEPLOY_PATH }}
