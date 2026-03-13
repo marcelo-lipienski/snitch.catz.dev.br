@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Snitch | Report {{ $report->uuid }}</title>
+    <title>snitch | Report {{ $report->uuid }}</title>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0DN83YGKTX"></script>
     <script>
@@ -48,7 +48,7 @@
                 <div class="bg-primary p-1.5 rounded-lg flex items-center justify-center text-white shadow-lg shadow-primary/20">
                     <span class="material-symbols-outlined text-2xl font-bold">radar</span>
                 </div>
-                <h1 class="text-2xl font-black tracking-tighter text-slate-900 dark:text-slate-100 uppercase">Snitch</h1>
+                <h1 class="text-2xl font-black tracking-tighter text-slate-900 dark:text-slate-100 uppercase">snitch</h1>
             </a>
         </div>
     </header>
@@ -114,7 +114,7 @@
     <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 py-12 px-6">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
             <p class="text-sm text-slate-500 dark:text-slate-500 font-medium">
-                © 2024 Snitch AI. All rights reserved.
+                © 2026 snitch. All rights reserved.
             </p>
         </div>
     </footer>
