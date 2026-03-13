@@ -1,6 +1,6 @@
 @extends('layouts.report')
 
-@section('title', 'Snitch | Technical Report - ' . $report->uuid)
+@section('title', 'snitch | Technical Report - ' . $report->uuid)
 
 @section('content')
 <div class="space-y-8">
