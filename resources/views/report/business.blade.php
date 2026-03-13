@@ -1,22 +1,10 @@
 @extends('layouts.report')
 
 @section('title', 'snitch | Business Report - ' . $report->uuid)
+@section('header_title', 'Business Insights')
+@section('header_description', 'Analysis of team productivity, delivery speed, and operational efficiency.')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">Business Insights</h2>
-            <p class="text-slate-500 dark:text-slate-400">Analysis of team productivity, delivery speed, and operational efficiency.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-                {{ $report->status }}
-            </span>
-            <span class="text-sm text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }}</span>
-        </div>
-    </div>
-
     <!-- Executive Summary -->
     <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary shadow-sm">
         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
@@ -125,5 +113,4 @@
             @endforeach
         </div>
     </div>
-</div>
 @endsection

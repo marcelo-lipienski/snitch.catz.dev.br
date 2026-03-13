@@ -66,7 +66,22 @@
 
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-6 pb-12 z-10">
-        @yield('content')
+        <div class="space-y-8">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">@yield('header_title')</h2>
+                    <p class="text-slate-500 dark:text-slate-400">@yield('header_description')</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                        {{ $report->status }}
+                    </span>
+                    <span class="text-sm text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }}</span>
+                </div>
+            </div>
+
+            @yield('content')
+        </div>
     </main>
 
     <!-- Footer -->

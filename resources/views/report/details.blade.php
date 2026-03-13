@@ -1,22 +1,10 @@
 @extends('layouts.report')
 
 @section('title', 'snitch | Technical Report - ' . $report->uuid)
+@section('header_title', 'Technical Deep Dive')
+@section('header_description', 'In-depth analysis of code patterns, architecture, and technical debt.')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">Technical Deep Dive</h2>
-            <p class="text-slate-500 dark:text-slate-400">In-depth analysis of code patterns, architecture, and technical debt.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-                {{ $report->status }}
-            </span>
-            <span class="text-sm text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }}</span>
-        </div>
-    </div>
-
     <!-- Key Indicators -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- System Health -->
@@ -145,7 +133,6 @@
             </div>
         </div>
     </div>
-</div>
 
 <style>
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
