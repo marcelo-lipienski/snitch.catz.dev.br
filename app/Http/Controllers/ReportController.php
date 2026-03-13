@@ -40,48 +40,52 @@ class ReportController extends Controller
         }
 
         $data = $report->data;
+        $riskProfile = $data['risk_profile'] ?? [];
+        $issueCounts = $data['issue_counts_by_category'] ?? [];
         
         // Map raw Snitch data to the view's expected structure
         $mapped = [
             'technical' => [
                 'system_health' => round($data['maintainability_index'] ?? 0),
-                'risk_profile' => $data['risk_profile'] ?? 'Unknown',
-                'risk_score' => $data['debt_score'] ?? 0,
+                'risk_profile' => $riskProfile['rating'] ?? 'Unknown',
+                'risk_score' => $riskProfile['score'] ?? 0,
                 'debt_recovery' => ($data['total_debt_hours'] ?? 0) . ' hrs',
                 'maintainability_index' => round($data['maintainability_index'] ?? 0),
-                'complexity_score' => round(75), // Default if not directly available
-                'duplication_score' => round($data['duplications'] ?? 0),
+                'complexity_score' => round(($data['complexity_distribution']['21+'] ?? 0) * 10 + 50), // Derived
+                'duplication_score' => count($data['duplications'] ?? []),
                 'findings' => array_map(function($issue) {
+                    $severity = strtolower($issue['severity'] ?? 'medium');
                     return [
-                        'icon' => 'warning',
-                        'severity' => strtolower($issue['severity'] ?? 'medium'),
-                        'title' => $issue['title'] ?? 'Code Issue',
-                        'description' => $issue['description'] ?? ''
+                        'icon' => str_contains($issue['rule'] ?? '', 'security') ? 'security' : 
+                                 (str_contains($issue['rule'] ?? '', 'architecture') ? 'architecture' : 'warning'),
+                        'severity' => $severity === 'critical' ? 'high' : ($severity === 'warning' ? 'medium' : 'low'),
+                        'title' => $issue['rule'] ?? 'Code Issue',
+                        'description' => $issue['message'] ?? ''
                     ];
                 }, array_slice($data['issues'] ?? [], 0, 5)),
             ],
             'business' => [
                 'summary' => $this->generateSummary($data),
                 'roadmap_opportunity_cost' => ($data['total_debt_hours'] ?? 0) . ' hrs',
-                'governance_liability' => $data['risk_profile'] ?? 'Unknown',
-                'feature_velocity_index' => ($data['maintainability_index'] ?? 0) . '%',
+                'governance_liability' => $riskProfile['rating'] ?? 'Unknown',
+                'feature_velocity_index' => round($data['maintainability_index'] ?? 0) . '%',
                 'risk_dimensions' => [
-                    ['label' => 'Service Continuity Risk', 'value' => 4, 'description' => 'Potential for unforced service outages'],
-                    ['label' => 'Change Resistance', 'value' => 31, 'description' => 'Structural friction limiting rapid iteration'],
-                    ['label' => 'Talent Scaling Friction', 'value' => 4, 'description' => 'Lag time for new hires to achieve ROI'],
-                    ['label' => 'Data Breach Liability', 'value' => $data['security_issue_count'] ?? 0, 'description' => 'Vulnerability to financial and legal penalties'],
+                    ['label' => 'Service Continuity Risk', 'value' => round(($riskProfile['bug_propensity'] ?? 0) * 100), 'description' => 'Potential for unforced service outages'],
+                    ['label' => 'Change Resistance', 'value' => round(($data['instability_index'] ?? 0) * 100), 'description' => 'Structural friction limiting rapid iteration'],
+                    ['label' => 'Talent Scaling Friction', 'value' => round(($riskProfile['onboarding_difficulty'] ?? 0) * 10), 'description' => 'Lag time for new hires to achieve ROI'],
+                    ['label' => 'Data Breach Liability', 'value' => round(($riskProfile['security_risk'] ?? 0) * 100), 'description' => 'Vulnerability to financial and legal penalties'],
                 ],
                 'technical_interest' => [
-                    ['label' => 'Architecture', 'value' => 7, 'blocks' => 16],
-                    ['label' => 'Clean Code', 'value' => 3, 'blocks' => 7],
-                    ['label' => 'Code Smell', 'value' => 26, 'blocks' => 64],
-                    ['label' => 'Type Safety', 'value' => 11, 'blocks' => 28],
+                    ['label' => 'Architecture', 'value' => $issueCounts['architecture'] ?? 0, 'blocks' => ($issueCounts['architecture'] ?? 0) * 2],
+                    ['label' => 'Clean Code', 'value' => $issueCounts['style'] ?? 0, 'blocks' => ($issueCounts['style'] ?? 0) * 2],
+                    ['label' => 'Code Smell', 'value' => $issueCounts['complexity'] ?? 0, 'blocks' => ($issueCounts['complexity'] ?? 0) * 2],
+                    ['label' => 'Type Safety', 'value' => $issueCounts['security'] ?? 0, 'blocks' => ($issueCounts['security'] ?? 0) * 2],
                 ],
                 'hotspots' => array_map(function($hotspot) {
                     return [
                         'file' => $hotspot['file'] ?? 'Unknown',
-                        'score' => $hotspot['score'] ?? 0,
-                        'volatility' => 'Active'
+                        'score' => $hotspot['risk_score'] ?? 0,
+                        'volatility' => $hotspot['churn_level'] ?? 'Stable'
                     ];
                 }, array_slice($data['hotspots'] ?? [], 0, 3)),
             ]
@@ -94,10 +98,10 @@ class ReportController extends Controller
     private function generateSummary($data)
     {
         $health = round($data['maintainability_index'] ?? 0);
-        $risk = $data['risk_profile'] ?? 'Unknown';
+        $risk = $data['risk_profile']['rating'] ?? 'Unknown';
         $debt = $data['total_debt_hours'] ?? 0;
 
-        return "The current strategic assessment of the codebase reveals a system health rating of {$health}% with a {$risk} overall risk profile. The organization is currently carrying {$debt} hours of \"Technical Interest,\" which represents the estimated effort for debt recovery.";
+        return "The current strategic assessment of the codebase reveals a system health rating of {$health}% with a {$risk} overall risk profile. The organization is currently carrying {$debt} hours of \"Technical Interest,\" which is exerting pressure on roadmap throughput.";
     }
 
     public function previewTechnical()

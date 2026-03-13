@@ -37,11 +37,24 @@ class ReportControllerTest extends TestCase
             'commit_hash' => 'hash123',
             'status' => 'completed',
             'data' => [
-                'maintainability_index' => 85.5,
-                'risk_profile' => 'Critical',
-                'total_debt_hours' => 120,
+                'maintainability_index' => 78.45,
+                'total_debt_hours' => 24.5,
+                'risk_profile' => [
+                    'rating' => 'Moderate',
+                    'score' => 65
+                ],
                 'issues' => [
-                    ['title' => 'Issue 1', 'severity' => 'High', 'description' => 'Desc 1']
+                    [
+                        'rule' => 'security/sql-injection',
+                        'severity' => 'critical',
+                        'message' => 'Potential SQL injection'
+                    ]
+                ],
+                'complexity_distribution' => [
+                    '21+' => 5
+                ],
+                'duplications' => [
+                    ['lines' => 35]
                 ]
             ]
         ]);
@@ -49,10 +62,11 @@ class ReportControllerTest extends TestCase
         $response = $this->get("/report/{$uuid}");
 
         $response->assertStatus(200);
-        $response->assertSee('86%'); // Rounded 85.5
-        $response->assertSee('Critical');
-        $response->assertSee('120 hrs');
-        $response->assertSee('Issue 1');
+        $response->assertSee('78%');
+        $response->assertSee('Moderate');
+        $response->assertSee('24.5 hrs');
+        $response->assertSee('security/sql-injection');
+        $response->assertSee('Potential SQL injection');
     }
 
     public function test_business_serves_business_view_when_completed()
@@ -81,11 +95,27 @@ class ReportControllerTest extends TestCase
             'commit_hash' => 'hash123',
             'status' => 'completed',
             'data' => [
-                'maintainability_index' => 85.5,
-                'risk_profile' => 'Critical',
-                'total_debt_hours' => 120,
+                'maintainability_index' => 78.45,
+                'total_debt_hours' => 24.5,
+                'risk_profile' => [
+                    'rating' => 'Moderate',
+                    'bug_propensity' => 0.45,
+                    'onboarding_difficulty' => 7.5,
+                    'security_risk' => 0.8
+                ],
+                'instability_index' => 0.32,
+                'issue_counts_by_category' => [
+                    'architecture' => 12,
+                    'style' => 17,
+                    'complexity' => 8,
+                    'security' => 5
+                ],
                 'hotspots' => [
-                    ['file' => 'App/Model.php', 'score' => 99]
+                    [
+                        'file' => 'src/Auth/Manager.php',
+                        'risk_score' => 92.4,
+                        'churn_level' => 'Volatile'
+                    ]
                 ]
             ]
         ]);
@@ -93,10 +123,17 @@ class ReportControllerTest extends TestCase
         $response = $this->get("/report/{$uuid}/business");
 
         $response->assertStatus(200);
-        $response->assertSee('86%');
-        $response->assertSee('120 hrs');
-        $response->assertSee('App/Model.php');
-        $response->assertSee('The current strategic assessment of the codebase reveals a system health rating of 86%');
+        $response->assertSee('78%');
+        $response->assertSee('24.5 hrs');
+        $response->assertSee('src/Auth/Manager.php');
+        $response->assertSee('Volatile');
+        $response->assertSee('The current strategic assessment of the codebase reveals a system health rating of 78%');
+        
+        // Check risk dimensions values
+        $response->assertSee('45%'); // Bug propensity
+        $response->assertSee('32%'); // Instability
+        $response->assertSee('75%'); // Onboarding difficulty
+        $response->assertSee('80%'); // Security risk
     }
 
     public function test_business_returns_404_when_not_completed()
