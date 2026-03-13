@@ -97,7 +97,6 @@ class AnalyzeRepositoryJob implements ShouldQueue
                     'docker', 'run', '--rm',
                     '--user', "{$uid}:{$gid}",
                     '-v', "{$repoPath}:/data",
-                    '-v', "{$reportOutputPath}:/reports",
                     'mlipienski/snitch'
                 ]);
 
@@ -107,7 +106,23 @@ class AnalyzeRepositoryJob implements ShouldQueue
                 return;
             }
 
-            $this->report->update(['status' => 'completed']);
+            // 4. Capture and store the JSON report from stdout
+            $jsonReport = trim($docker->output());
+            $data = json_decode($jsonReport, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error("Snitch output for report {$uuid} is not valid JSON: " . json_last_error_msg());
+                $this->report->update([
+                    'status' => 'failed',
+                    'data' => ['error' => 'Invalid JSON report received', 'raw_output' => $jsonReport]
+                ]);
+                return;
+            }
+
+            $this->report->update([
+                'status' => 'completed',
+                'data' => $data
+            ]);
 
         } catch (\Exception $e) {
             $this->report->update(['status' => 'failed']);
