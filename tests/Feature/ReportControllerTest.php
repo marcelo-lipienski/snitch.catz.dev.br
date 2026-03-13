@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Report;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -12,7 +11,7 @@ class ReportControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_show_serves_index_html_when_completed()
+    public function test_show_serves_details_view_when_completed()
     {
         $uuid = (string) Str::uuid();
         $report = Report::create([
@@ -21,22 +20,35 @@ class ReportControllerTest extends TestCase
             'commit_hash' => 'hash123',
             'status' => 'completed',
         ]);
-
-        $path = storage_path("app/reports/{$uuid}/snitch-report");
-        File::ensureDirectoryExists($path);
-        File::put("{$path}/index.html", "<html><body>Index</body></html>");
 
         $response = $this->get("/report/{$uuid}");
 
         $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'text/html; charset=utf-8');
-        $response->assertSee('/report/' . $uuid);
-        $response->assertSee('nav-deep-dive');
-        
-        File::deleteDirectory(storage_path("app/reports/{$uuid}"));
+        $response->assertSee('Technical Deep Dive');
+        $response->assertSee('System Health');
     }
 
-    public function test_business_serves_business_html_when_completed()
+    public function test_show_handles_missing_technical_key_gracefully()
+    {
+        $uuid = (string) Str::uuid();
+        $report = Report::create([
+            'uuid' => $uuid,
+            'repository_url' => 'https://github.com/test/repo',
+            'commit_hash' => 'hash123',
+            'status' => 'completed',
+            'data' => ['something' => 'else'] // Missing 'technical' key
+        ]);
+
+        $response = $this->get("/report/{$uuid}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Technical Deep Dive');
+        // It should fallback to dummy data for 'technical'
+        $response->assertSee('System Health');
+        $response->assertSee('94%'); // Dummy value
+    }
+
+    public function test_business_serves_business_view_when_completed()
     {
         $uuid = (string) Str::uuid();
         $report = Report::create([
@@ -46,18 +58,30 @@ class ReportControllerTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $path = storage_path("app/reports/{$uuid}/snitch-report");
-        File::ensureDirectoryExists($path);
-        File::put("{$path}/business", "<html><body>Business</body></html>");
+        $response = $this->get("/report/{$uuid}/business");
+
+        $response->assertStatus(200);
+        $response->assertSee('Business Insights');
+        $response->assertSee('Strategic Executive Summary');
+    }
+
+    public function test_business_handles_missing_business_key_gracefully()
+    {
+        $uuid = (string) Str::uuid();
+        $report = Report::create([
+            'uuid' => $uuid,
+            'repository_url' => 'https://github.com/test/repo',
+            'commit_hash' => 'hash123',
+            'status' => 'completed',
+            'data' => ['technical' => ['system_health' => 100]] // Missing 'business' key
+        ]);
 
         $response = $this->get("/report/{$uuid}/business");
 
         $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'text/html; charset=utf-8');
-        $response->assertSee('/report/' . $uuid . '/business');
-        $response->assertSee('nav-business');
-        
-        File::deleteDirectory(storage_path("app/reports/{$uuid}"));
+        $response->assertSee('Business Insights');
+        // It should fallback to dummy data for 'business'
+        $response->assertSee('Strategic Executive Summary');
     }
 
     public function test_business_returns_404_when_not_completed()
