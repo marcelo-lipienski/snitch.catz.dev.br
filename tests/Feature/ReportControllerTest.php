@@ -99,11 +99,11 @@ class ReportControllerTest extends TestCase
                 'total_debt_hours' => 24.5,
                 'risk_profile' => [
                     'rating' => 'Moderate',
-                    'bug_propensity' => 0.45,
-                    'onboarding_difficulty' => 7.5,
-                    'security_risk' => 0.8
+                    'bug_propensity' => 45,
+                    'onboarding_difficulty' => 75,
+                    'security_risk' => 80
                 ],
-                'instability_index' => 0.32,
+                'instability_index' => 32,
                 'issue_counts_by_category' => [
                     'architecture' => 12,
                     'style' => 17,
