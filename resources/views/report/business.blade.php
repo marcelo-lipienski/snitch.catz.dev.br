@@ -24,7 +24,7 @@
             Strategic Executive Summary
         </h3>
         <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
-            {{ $dummyData['business']['summary'] }}
+            {{ $reportData['business']['summary'] }}
         </p>
     </div>
 
@@ -35,7 +35,7 @@
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Roadmap Opportunity Cost</p>
                 <span class="material-symbols-outlined text-amber-500">monetization_on</span>
             </div>
-            <h3 class="text-4xl font-black text-amber-500">{{ $dummyData['business']['roadmap_opportunity_cost'] }}</h3>
+            <h3 class="text-4xl font-black text-amber-500">{{ $reportData['business']['roadmap_opportunity_cost'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
                 This debt represents <span class="font-bold text-slate-900 dark:text-slate-100">1.0 weeks</span> of direct feature delay.
             </p>
@@ -45,7 +45,7 @@
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Governance & Liability</p>
                 <span class="material-symbols-outlined text-rose-500">gavel</span>
             </div>
-            <h3 class="text-4xl font-black text-rose-500">{{ $dummyData['business']['governance_liability'] }}</h3>
+            <h3 class="text-4xl font-black text-rose-500">{{ $reportData['business']['governance_liability'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
                 Exposure includes <span class="font-bold text-rose-500">0 Compliance Liabilities</span>.
             </p>
@@ -55,7 +55,7 @@
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Feature Velocity Index</p>
                 <span class="material-symbols-outlined text-primary">trending_up</span>
             </div>
-            <h3 class="text-4xl font-black text-primary">{{ $dummyData['business']['feature_velocity_index'] }}</h3>
+            <h3 class="text-4xl font-black text-primary">{{ $reportData['business']['feature_velocity_index'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
                 Measure of organizational agility.
             </p>
@@ -68,7 +68,7 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <h4 class="text-lg font-bold mb-6 text-slate-400 italic">Enterprise Risk Dimensions</h4>
             <div class="space-y-6">
-                @foreach($dummyData['business']['risk_dimensions'] as $risk)
+                @foreach($reportData['business']['risk_dimensions'] as $risk)
                 <div class="space-y-2">
                     <div class="flex justify-between items-end">
                         <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ $risk['label'] }}</span>
@@ -87,7 +87,7 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <h4 class="text-lg font-bold mb-6 text-slate-400 italic">Calculated Technical Interest</h4>
             <div class="space-y-6">
-                @foreach($dummyData['business']['technical_interest'] as $interest)
+                @foreach($reportData['business']['technical_interest'] as $interest)
                 <div class="group">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-xs font-medium capitalize">{{ $interest['label'] }}</span>
@@ -109,7 +109,7 @@
             Business Units at Risk
         </h4>
         <div class="space-y-4">
-            @foreach($dummyData['business']['hotspots'] as $hotspot)
+            @foreach($reportData['business']['hotspots'] as $hotspot)
             <div class="p-6 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 flex justify-between items-center">
                 <div>
                     <div class="text-xs font-mono text-slate-500 mb-1">{{ $hotspot['file'] }}</div>
