@@ -45,6 +45,7 @@ class ReportControllerTest extends TestCase
                 ],
                 'issues' => [
                     [
+                        'file' => 'src/Auth/Manager.php',
                         'rule' => 'security/sql-injection',
                         'severity' => 'critical',
                         'message' => 'Potential SQL injection'
@@ -65,7 +66,9 @@ class ReportControllerTest extends TestCase
         $response->assertSee('78%');
         $response->assertSee('Moderate');
         $response->assertSee('24.5 hrs');
-        $response->assertSee('security/sql-injection');
+        // Tree view should contain filenames
+        $response->assertSee('Manager.php');
+        // Issues are passed to JS
         $response->assertSee('Potential SQL injection');
     }
 
