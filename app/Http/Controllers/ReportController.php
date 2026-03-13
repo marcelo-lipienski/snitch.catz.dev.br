@@ -12,7 +12,7 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $dummyData = $report->data ?? $this->getDummyData();
+            $dummyData = $this->resolveReportData($report);
             return view('report.details', compact('report', 'dummyData'));
         }
 
@@ -24,11 +24,23 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $dummyData = $report->data ?? $this->getDummyData();
+            $dummyData = $this->resolveReportData($report);
             return view('report.business', compact('report', 'dummyData'));
         }
 
         return abort(404, 'Business report not found or analysis not completed.');
+    }
+
+    private function resolveReportData(Report $report)
+    {
+        $defaultData = $this->getDummyData();
+        
+        if (empty($report->data)) {
+            return $defaultData;
+        }
+
+        // Deep merge report data with defaults to ensure all keys exist
+        return array_replace_recursive($defaultData, $report->data);
     }
 
     public function previewTechnical()
