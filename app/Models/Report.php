@@ -11,5 +11,10 @@ class Report extends Model
         'repository_url',
         'commit_hash',
         'status',
+        'data',
+    ];
+
+    protected $casts = [
+        'data' => 'array',
     ];
 }
