@@ -31,6 +31,32 @@ class ReportController extends Controller
         return abort(404, 'Business report not found or analysis not completed.');
     }
 
+    private function buildFileTree($findings)
+    {
+        $tree = [];
+        foreach ($findings as $path => $issues) {
+            $parts = explode('/', $path);
+            $current = &$tree;
+            foreach ($parts as $part) {
+                if (!isset($current[$part])) {
+                    $current[$part] = ['_is_file' => false, '_children' => []];
+                }
+                $current = &$current[$part]['_children'];
+            }
+            // Mark as file and store its full path and issues
+            $lastPart = end($parts);
+            // We need to re-find the node because $current points to children
+            $node = &$tree;
+            foreach (array_slice($parts, 0, -1) as $part) {
+                $node = &$node[$part]['_children'];
+            }
+            $node[$lastPart]['_is_file'] = true;
+            $node[$lastPart]['_full_path'] = $path;
+            $node[$lastPart]['_issue_count'] = count($issues);
+        }
+        return $tree;
+    }
+
     private function resolveReportData(Report $report)
     {
         if (empty($report->data)) {
@@ -41,6 +67,26 @@ class ReportController extends Controller
         $riskProfile = $data['risk_profile'] ?? [];
         $issueCounts = $data['issue_counts_by_category'] ?? [];
         
+        $issues = $data['issues'] ?? [];
+        $groupedFindings = [];
+        foreach ($issues as $issue) {
+            $file = $issue['file'] ?? 'Unknown';
+            $severity = strtolower($issue['severity'] ?? 'medium');
+            
+            if (!isset($groupedFindings[$file])) {
+                $groupedFindings[$file] = [];
+            }
+            
+            $groupedFindings[$file][] = [
+                'icon' => str_contains($issue['rule'] ?? '', 'security') ? 'security' : 
+                         (str_contains($issue['rule'] ?? '', 'architecture') ? 'architecture' : 'warning'),
+                'severity' => $severity === 'critical' ? 'high' : ($severity === 'warning' ? 'medium' : 'low'),
+                'title' => $issue['rule'] ?? 'Code Issue',
+                'description' => $issue['message'] ?? '',
+                'line' => $issue['line'] ?? null,
+            ];
+        }
+
         // Map raw Snitch data to the view's expected structure
         return [
             'technical' => [
@@ -51,16 +97,8 @@ class ReportController extends Controller
                 'maintainability_index' => round($data['maintainability_index'] ?? 0),
                 'complexity_score' => round(($data['complexity_distribution']['21+'] ?? 0) * 10 + 50), // Derived
                 'duplication_score' => count($data['duplications'] ?? []),
-                'findings' => array_map(function($issue) {
-                    $severity = strtolower($issue['severity'] ?? 'medium');
-                    return [
-                        'icon' => str_contains($issue['rule'] ?? '', 'security') ? 'security' : 
-                                 (str_contains($issue['rule'] ?? '', 'architecture') ? 'architecture' : 'warning'),
-                        'severity' => $severity === 'critical' ? 'high' : ($severity === 'warning' ? 'medium' : 'low'),
-                        'title' => $issue['rule'] ?? 'Code Issue',
-                        'description' => $issue['message'] ?? ''
-                    ];
-                }, array_slice($data['issues'] ?? [], 0, 5)),
+                'findings' => $groupedFindings,
+                'file_tree' => $this->buildFileTree($groupedFindings),
             ],
             'business' => [
                 'summary' => $this->generateSummary($data),
@@ -75,9 +113,9 @@ class ReportController extends Controller
                 ],
                 'technical_interest' => [
                     ['label' => 'Architecture', 'value' => $issueCounts['architecture'] ?? 0, 'blocks' => ($issueCounts['architecture'] ?? 0) * 2],
-                    ['label' => 'Clean Code', 'value' => $issueCounts['style'] ?? 0, 'blocks' => ($issueCounts['style'] ?? 0) * 2],
-                    ['label' => 'Code Smell', 'value' => $issueCounts['complexity'] ?? 0, 'blocks' => ($issueCounts['complexity'] ?? 0) * 2],
-                    ['label' => 'Type Safety', 'value' => $issueCounts['security'] ?? 0, 'blocks' => ($issueCounts['security'] ?? 0) * 2],
+                    ['label' => 'Clean Code', 'value' => $issueCounts['clean-code'] ?? 0, 'blocks' => ($issueCounts['clean-code'] ?? 0) * 2],
+                    ['label' => 'Code Smell', 'value' => $issueCounts['code-smell'] ?? 0, 'blocks' => ($issueCounts['code-smell'] ?? 0) * 2],
+                    ['label' => 'Type Safety', 'value' => $issueCounts['type-safety'] ?? 0, 'blocks' => ($issueCounts['type-safety'] ?? 0) * 2],
                 ],
                 'hotspots' => array_map(function($hotspot) {
                     return [
