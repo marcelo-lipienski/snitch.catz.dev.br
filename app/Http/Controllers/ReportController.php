@@ -68,10 +68,10 @@ class ReportController extends Controller
                 'governance_liability' => $riskProfile['rating'] ?? 'Unknown',
                 'feature_velocity_index' => round($data['maintainability_index'] ?? 0) . '%',
                 'risk_dimensions' => [
-                    ['label' => 'Service Continuity Risk', 'value' => round(($riskProfile['bug_propensity'] ?? 0) * 100), 'description' => 'Potential for unforced service outages'],
-                    ['label' => 'Change Resistance', 'value' => round(($data['instability_index'] ?? 0) * 100), 'description' => 'Structural friction limiting rapid iteration'],
-                    ['label' => 'Talent Scaling Friction', 'value' => round(($riskProfile['onboarding_difficulty'] ?? 0) * 10), 'description' => 'Lag time for new hires to achieve ROI'],
-                    ['label' => 'Data Breach Liability', 'value' => round(($riskProfile['security_risk'] ?? 0) * 100), 'description' => 'Vulnerability to financial and legal penalties'],
+                    ['label' => 'Service Continuity Risk', 'value' => round($riskProfile['bug_propensity'] ?? 0), 'description' => 'Potential for unforced service outages'],
+                    ['label' => 'Change Resistance', 'value' => round($data['instability_index'] ?? 0), 'description' => 'Structural friction limiting rapid iteration'],
+                    ['label' => 'Talent Scaling Friction', 'value' => round($riskProfile['onboarding_difficulty'] ?? 0), 'description' => 'Lag time for new hires to achieve ROI'],
+                    ['label' => 'Data Breach Liability', 'value' => round($riskProfile['security_risk'] ?? 0), 'description' => 'Vulnerability to financial and legal penalties'],
                 ],
                 'technical_interest' => [
                     ['label' => 'Architecture', 'value' => $issueCounts['architecture'] ?? 0, 'blocks' => ($issueCounts['architecture'] ?? 0) * 2],
