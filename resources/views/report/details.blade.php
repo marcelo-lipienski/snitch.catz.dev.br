@@ -27,10 +27,10 @@
             <div class="relative size-28 rounded-full flex items-center justify-center mb-4">
                 <svg class="size-full -rotate-90" viewbox="0 0 100 100">
                     <circle class="text-slate-100 dark:text-slate-800" cx="50" cy="50" fill="transparent" r="44" stroke="currentColor" stroke-width="8"></circle>
-                    <circle class="text-primary" cx="50" cy="50" fill="transparent" r="44" stroke="currentColor" stroke-dasharray="276" stroke-dashoffset="{{ 276 - (276 * ($dummyData['technical']['system_health'] ?? 0) / 100) }}" stroke-width="8" stroke-linecap="round"></circle>
+                    <circle class="text-primary" cx="50" cy="50" fill="transparent" r="44" stroke="currentColor" stroke-dasharray="276" stroke-dashoffset="{{ 276 - (276 * ($reportData['technical']['system_health'] ?? 0) / 100) }}" stroke-width="8" stroke-linecap="round"></circle>
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ $dummyData['technical']['system_health'] }}%</span>
+                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ $reportData['technical']['system_health'] }}%</span>
                 </div>
             </div>
             <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">System Health</span>
@@ -44,10 +44,10 @@
                 </div>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Risk Profile</span>
             </div>
-            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $dummyData['technical']['risk_profile'] }}</div>
-            <div class="text-xs text-slate-500">Score: {{ $dummyData['technical']['risk_score'] }}/100</div>
+            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['risk_profile'] }}</div>
+            <div class="text-xs text-slate-500">Score: {{ $reportData['technical']['risk_score'] }}/100</div>
             <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                <div class="bg-rose-500 h-1.5 rounded-full" style="width: {{ $dummyData['technical']['risk_score'] }}%"></div>
+                <div class="bg-rose-500 h-1.5 rounded-full" style="width: {{ $reportData['technical']['risk_score'] }}%"></div>
             </div>
         </div>
 
@@ -59,7 +59,7 @@
                 </div>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Debt Recovery</span>
             </div>
-            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $dummyData['technical']['debt_recovery'] }}</div>
+            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['debt_recovery'] }}</div>
             <div class="text-xs text-slate-500">Estimated Effort</div>
             <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
                 <div class="bg-amber-500 h-1.5 rounded-full" style="width: 40%"></div>
@@ -74,10 +74,10 @@
                 </div>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Maintainability</span>
             </div>
-            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $dummyData['technical']['maintainability_index'] }}%</div>
+            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['maintainability_index'] }}%</div>
             <div class="text-xs text-slate-500">Index Score</div>
             <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $dummyData['technical']['maintainability_index'] }}%"></div>
+                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $reportData['technical']['maintainability_index'] }}%"></div>
             </div>
         </div>
     </div>
@@ -89,7 +89,7 @@
                 <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100">Key Findings</h3>
             </div>
             <div class="divide-y divide-slate-200 dark:divide-slate-800">
-                @foreach($dummyData['technical']['findings'] ?? [] as $finding)
+                @foreach($reportData['technical']['findings'] ?? [] as $finding)
                 <div class="p-6 flex gap-4">
                     <div class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center {{ $finding['severity'] === 'high' ? 'bg-rose-500/10 text-rose-500' : ($finding['severity'] === 'medium' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500') }}">
                         <span class="material-symbols-outlined">{{ $finding['icon'] }}</span>
@@ -111,19 +111,19 @@
                     <div class="space-y-2">
                         <div class="flex justify-between items-end">
                             <span class="text-sm font-bold text-slate-500 uppercase tracking-widest">Complexity Score</span>
-                            <span class="text-lg font-black text-slate-900 dark:text-slate-100">{{ $dummyData['technical']['complexity_score'] }}/100</span>
+                            <span class="text-lg font-black text-slate-900 dark:text-slate-100">{{ $reportData['technical']['complexity_score'] }}/100</span>
                         </div>
                         <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div class="bg-primary h-full rounded-full" style="width: {{ $dummyData['technical']['complexity_score'] }}%"></div>
+                            <div class="bg-primary h-full rounded-full" style="width: {{ $reportData['technical']['complexity_score'] }}%"></div>
                         </div>
                     </div>
                     <div class="space-y-2">
                         <div class="flex justify-between items-end">
                             <span class="text-sm font-bold text-slate-500 uppercase tracking-widest">Duplication Score</span>
-                            <span class="text-lg font-black text-slate-900 dark:text-slate-100">{{ $dummyData['technical']['duplication_score'] }}/100</span>
+                            <span class="text-lg font-black text-slate-900 dark:text-slate-100">{{ $reportData['technical']['duplication_score'] }}/100</span>
                         </div>
                         <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ $dummyData['technical']['duplication_score'] }}%"></div>
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ $reportData['technical']['duplication_score'] }}%"></div>
                         </div>
                     </div>
                 </div>

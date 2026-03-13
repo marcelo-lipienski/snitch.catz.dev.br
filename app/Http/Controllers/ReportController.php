@@ -12,8 +12,8 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $dummyData = $this->resolveReportData($report);
-            return view('report.details', compact('report', 'dummyData'));
+            $reportData = $this->resolveReportData($report);
+            return view('report.details', compact('report', 'reportData'));
         }
 
         return view('report.show', compact('report'));
@@ -24,8 +24,8 @@ class ReportController extends Controller
         $report = Report::where('uuid', $uuid)->firstOrFail();
 
         if ($report->status === 'completed') {
-            $dummyData = $this->resolveReportData($report);
-            return view('report.business', compact('report', 'dummyData'));
+            $reportData = $this->resolveReportData($report);
+            return view('report.business', compact('report', 'reportData'));
         }
 
         return abort(404, 'Business report not found or analysis not completed.');
@@ -33,10 +33,8 @@ class ReportController extends Controller
 
     private function resolveReportData(Report $report)
     {
-        $defaultData = $this->getDummyData();
-        
         if (empty($report->data)) {
-            return $defaultData;
+            return $this->getEmptyDataStructure();
         }
 
         $data = $report->data;
@@ -44,7 +42,7 @@ class ReportController extends Controller
         $issueCounts = $data['issue_counts_by_category'] ?? [];
         
         // Map raw Snitch data to the view's expected structure
-        $mapped = [
+        return [
             'technical' => [
                 'system_health' => round($data['maintainability_index'] ?? 0),
                 'risk_profile' => $riskProfile['rating'] ?? 'Unknown',
@@ -90,9 +88,6 @@ class ReportController extends Controller
                 }, array_slice($data['hotspots'] ?? [], 0, 3)),
             ]
         ];
-
-        // Deep merge report data with defaults to ensure all keys exist
-        return array_replace_recursive($defaultData, $mapped);
     }
 
     private function generateSummary($data)
@@ -104,86 +99,27 @@ class ReportController extends Controller
         return "The current strategic assessment of the codebase reveals a system health rating of {$health}% with a {$risk} overall risk profile. The organization is currently carrying {$debt} hours of \"Technical Interest,\" which is exerting pressure on roadmap throughput.";
     }
 
-    public function previewTechnical()
-    {
-        $report = new Report([
-            'uuid' => 'preview-uuid',
-            'status' => 'completed',
-            'repository_url' => 'https://github.com/example/repo',
-            'commit_hash' => 'abcdef1234567890',
-        ]);
-
-        $dummyData = $this->getDummyData();
-        return view('report.details', compact('report', 'dummyData'));
-    }
-
-    public function previewBusiness()
-    {
-        $report = new Report([
-            'uuid' => 'preview-uuid',
-            'status' => 'completed',
-            'repository_url' => 'https://github.com/example/repo',
-            'commit_hash' => 'abcdef1234567890',
-        ]);
-
-        $dummyData = $this->getDummyData();
-        return view('report.business', compact('report', 'dummyData'));
-    }
-
-    private function getDummyData()
+    private function getEmptyDataStructure()
     {
         return [
             'technical' => [
-                'system_health' => 94,
-                'risk_profile' => 'Low',
-                'risk_score' => 3,
-                'debt_recovery' => '40.9 hrs',
-                'maintainability_index' => 94,
-                'complexity_score' => 80,
-                'duplication_score' => 12,
-                'findings' => [
-                    [
-                        'icon' => 'warning',
-                        'severity' => 'high',
-                        'title' => 'SQL Injection Vulnerability',
-                        'description' => 'Unsanitized user input in QueryBuilder at RepositoryController.php:42'
-                    ],
-                    [
-                        'icon' => 'history',
-                        'severity' => 'medium',
-                        'title' => 'High Cyclomatic Complexity',
-                        'description' => 'ReportController::show method has too many nested conditionals.'
-                    ],
-                    [
-                        'icon' => 'info',
-                        'severity' => 'low',
-                        'title' => 'Unused Imports',
-                        'description' => 'Multiple unused classes imported in AnalyzeRepositoryJob.php'
-                    ],
-                ],
+                'system_health' => 0,
+                'risk_profile' => 'Unknown',
+                'risk_score' => 0,
+                'debt_recovery' => '0 hrs',
+                'maintainability_index' => 0,
+                'complexity_score' => 0,
+                'duplication_score' => 0,
+                'findings' => [],
             ],
             'business' => [
-                'summary' => 'The current strategic assessment of the codebase reveals a system health rating of 94% with a Low overall risk profile. The organization is currently carrying 40.9 hours of "Technical Interest," which is exerting a 3% tax on roadmap throughput.',
-                'roadmap_opportunity_cost' => '40.9 hrs',
-                'governance_liability' => 'Low',
-                'feature_velocity_index' => '94%',
-                'risk_dimensions' => [
-                    ['label' => 'Service Continuity Risk', 'value' => 4, 'description' => 'Potential for unforced service outages'],
-                    ['label' => 'Change Resistance', 'value' => 31, 'description' => 'Structural friction limiting rapid iteration'],
-                    ['label' => 'Talent Scaling Friction', 'value' => 4, 'description' => 'Lag time for new hires to achieve ROI'],
-                    ['label' => 'Data Breach Liability', 'value' => 0, 'description' => 'Vulnerability to financial and legal penalties'],
-                ],
-                'technical_interest' => [
-                    ['label' => 'Architecture', 'value' => 7, 'blocks' => 16],
-                    ['label' => 'Clean Code', 'value' => 3, 'blocks' => 7],
-                    ['label' => 'Code Smell', 'value' => 26, 'blocks' => 64],
-                    ['label' => 'Type Safety', 'value' => 11, 'blocks' => 28],
-                ],
-                'hotspots' => [
-                    ['file' => 'app/Domain/Property/Actions/StoreProperty.php', 'score' => 200, 'volatility' => 'Stable (4 changes)'],
-                    ['file' => 'app/Domain/Negotiation/Models/Offer.php', 'score' => 165, 'volatility' => 'Stable (5 changes)'],
-                    ['file' => 'app/Http/Controllers/VisitController.php', 'score' => 162, 'volatility' => 'Active (9 changes)'],
-                ]
+                'summary' => 'No analysis data available.',
+                'roadmap_opportunity_cost' => '0 hrs',
+                'governance_liability' => 'Unknown',
+                'feature_velocity_index' => '0%',
+                'risk_dimensions' => [],
+                'technical_interest' => [],
+                'hotspots' => [],
             ]
         ];
     }
