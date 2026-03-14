@@ -21,7 +21,12 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex justify-between items-start mb-4">
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Roadmap Opportunity Cost</p>
-                <span class="material-symbols-outlined text-amber-500">monetization_on</span>
+                <div class="text-right">
+                    <span class="material-symbols-outlined text-amber-500">monetization_on</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['roadmap_opportunity_cost'] }}</div>
+                    @endif
+                </div>
             </div>
             <h3 class="text-4xl font-black text-amber-500">{{ $reportData['business']['roadmap_opportunity_cost'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
@@ -31,7 +36,12 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex justify-between items-start mb-4">
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Governance & Liability</p>
-                <span class="material-symbols-outlined text-rose-500">gavel</span>
+                <div class="text-right">
+                    <span class="material-symbols-outlined text-rose-500">gavel</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['governance_liability'] }}</div>
+                    @endif
+                </div>
             </div>
             <h3 class="text-4xl font-black text-rose-500">{{ $reportData['business']['governance_liability'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
@@ -41,7 +51,12 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <div class="flex justify-between items-start mb-4">
                 <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Feature Velocity Index</p>
-                <span class="material-symbols-outlined text-primary">trending_up</span>
+                <div class="text-right">
+                    <span class="material-symbols-outlined text-primary">trending_up</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['feature_velocity_index'] }}</div>
+                    @endif
+                </div>
             </div>
             <h3 class="text-4xl font-black text-primary">{{ $reportData['business']['feature_velocity_index'] }}</h3>
             <p class="text-xs text-slate-500 mt-4 leading-relaxed">
@@ -56,14 +71,22 @@
         <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
             <h4 class="text-lg font-bold mb-6 text-slate-400 italic">Enterprise Risk Dimensions</h4>
             <div class="space-y-6">
-                @foreach($reportData['business']['risk_dimensions'] as $risk)
+                @foreach($reportData['business']['risk_dimensions'] as $index => $risk)
                 <div class="space-y-2">
                     <div class="flex justify-between items-end">
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ $risk['label'] }}</span>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ $risk['label'] }}</span>
+                            @if(isset($previousReportData['business']['risk_dimensions'][$index]))
+                            <span class="text-[9px] font-bold text-slate-400 italic">Prev: {{ $previousReportData['business']['risk_dimensions'][$index]['value'] }}%</span>
+                            @endif
+                        </div>
                         <span class="text-xs font-bold">{{ $risk['value'] }}%</span>
                     </div>
-                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-primary h-full rounded-full" style="width: {{ $risk['value'] }}%"></div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden relative">
+                        <div class="bg-primary h-full rounded-full z-10 relative" style="width: {{ $risk['value'] }}%"></div>
+                        @if(isset($previousReportData['business']['risk_dimensions'][$index]))
+                        <div class="absolute inset-0 bg-slate-300 dark:bg-slate-700 opacity-30" style="width: {{ $previousReportData['business']['risk_dimensions'][$index]['value'] }}%"></div>
+                        @endif
                     </div>
                     <p class="text-[9px] text-slate-500 italic">{{ $risk['description'] }}</p>
                 </div>

@@ -13,20 +13,29 @@ class ReportControllerTest extends TestCase
 
     public function test_show_serves_details_view_when_completed()
     {
-        $uuid = (string) Str::uuid();
-        $report = Report::create([
-            'uuid' => $uuid,
-            'repository_url' => 'https://github.com/test/repo',
-            'commit_hash' => 'hash123',
+        $url = 'https://github.com/test/repo';
+        $report1 = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => $url,
+            'commit_hash' => 'hash1',
             'status' => 'completed',
         ]);
 
-        $response = $this->get("/report/{$uuid}");
+        $report2 = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => $url,
+            'commit_hash' => 'hash2',
+            'status' => 'completed',
+            'previous_report_id' => $report1->id,
+        ]);
+
+        $response = $this->get("/report/{$report2->uuid}");
 
         $response->assertStatus(200);
         $response->assertSee('Technical Deep Dive');
         $response->assertSee('System Health');
         $response->assertSee('Analysis History');
+        $response->assertSee('Prev:');
     }
 
     public function test_show_includes_previous_reports_in_history()
