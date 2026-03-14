@@ -4,6 +4,13 @@
 @section('header_title', 'Business Insights')
 @section('header_description', 'Analysis of team productivity, delivery speed, and operational efficiency.')
 
+@push('header_actions')
+<a href="{{ route('report.architecture', $report->uuid) }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-primary/10 hover:text-primary transition-all border border-slate-200 dark:border-slate-700">
+    <span class="material-symbols-outlined text-sm">description</span>
+    ARCHITECTURE.md
+</a>
+@endpush
+
 @section('content')
     <!-- Executive Summary -->
     <div class="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 border-l-4 border-l-primary shadow-sm">
@@ -24,7 +31,21 @@
                 <div class="text-right">
                     <span class="material-symbols-outlined text-amber-500">monetization_on</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['roadmap_opportunity_cost'] }}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['business']['roadmap_opportunity_cost'] }}</span>
+                        @php
+                            $currentVal = (float) filter_var($reportData['business']['roadmap_opportunity_cost'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $prevVal = (float) filter_var($previousReportData['business']['roadmap_opportunity_cost'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $diff = $currentVal - $prevVal;
+                        @endphp
+                        @if($diff < 0)
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff > 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
@@ -39,7 +60,14 @@
                 <div class="text-right">
                     <span class="material-symbols-outlined text-rose-500">gavel</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['governance_liability'] }}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['business']['governance_liability'] }}</span>
+                        @if($reportData['business']['governance_liability'] !== $previousReportData['business']['governance_liability'])
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
@@ -54,7 +82,21 @@
                 <div class="text-right">
                     <span class="material-symbols-outlined text-primary">trending_up</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['business']['feature_velocity_index'] }}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['business']['feature_velocity_index'] }}</span>
+                        @php
+                            $currentVal = (float) filter_var($reportData['business']['feature_velocity_index'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $prevVal = (float) filter_var($previousReportData['business']['feature_velocity_index'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $diff = $currentVal - $prevVal;
+                        @endphp
+                        @if($diff > 0)
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff < 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
@@ -77,7 +119,19 @@
                         <div class="flex flex-col">
                             <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ $risk['label'] }}</span>
                             @if(isset($previousReportData['business']['risk_dimensions'][$index]))
-                            <span class="text-[9px] font-bold text-slate-400 italic">Prev: {{ $previousReportData['business']['risk_dimensions'][$index]['value'] }}%</span>
+                            <div class="flex items-center gap-1 text-[9px] font-bold text-slate-400 italic">
+                                <span>Prev: {{ $previousReportData['business']['risk_dimensions'][$index]['value'] }}%</span>
+                                @php
+                                    $diff = $risk['value'] - $previousReportData['business']['risk_dimensions'][$index]['value'];
+                                @endphp
+                                @if($diff < 0)
+                                    <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                                @elseif($diff > 0)
+                                    <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                                @else
+                                    <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                                @endif
+                            </div>
                             @endif
                         </div>
                         <span class="text-xs font-bold">{{ $risk['value'] }}%</span>

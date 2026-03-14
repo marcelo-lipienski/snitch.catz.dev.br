@@ -18,6 +18,8 @@ Route::get('/', function () {
 Route::post('/analyze', [RepositoryController::class, 'analyze']);
 Route::get('/report/preview/technical', [ReportController::class, 'previewTechnical'])->name('report.preview.technical');
 Route::get('/report/preview/business', [ReportController::class, 'previewBusiness'])->name('report.preview.business');
+Route::get('/report/preview/architecture', [ReportController::class, 'previewArchitecture'])->name('report.preview.architecture');
 Route::get('/report/{uuid}', [ReportController::class, 'show'])->name('report.show');
 Route::get('/report/{uuid}/business', [ReportController::class, 'business'])->name('report.business');
+Route::get('/report/{uuid}/architecture', [ReportController::class, 'architecture'])->name('report.architecture');
 Route::get('/report/{uuid}/status', [ReportController::class, 'status'])->name('report.status');
