@@ -22,9 +22,11 @@
                             $diff = $reportData['technical']['system_health'] - $previousReportData['technical']['system_health'];
                         @endphp
                         @if($diff > 0)
-                            <span class="text-emerald-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
                         @elseif($diff < 0)
                             <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
                         @endif
                     </div>
                     @endif
@@ -50,7 +52,19 @@
                 <div class="text-right">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Risk Profile</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['risk_profile'] }}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['technical']['risk_profile'] }}</span>
+                        @php
+                            $diff = $reportData['technical']['risk_score'] - $previousReportData['technical']['risk_score'];
+                        @endphp
+                        @if($diff < 0)
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff > 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
@@ -73,14 +87,31 @@
                 <div class="text-right">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Debt Recovery</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['debt_recovery'] }}</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['technical']['debt_recovery'] }}</span>
+                        @php
+                            $currentVal = (float) filter_var($reportData['technical']['debt_recovery'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $prevVal = (float) filter_var($previousReportData['technical']['debt_recovery'], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+                            $diff = $currentVal - $prevVal;
+                        @endphp
+                        @if($diff < 0)
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff > 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
             <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['debt_recovery'] }}</div>
             <div class="text-xs text-slate-500">Estimated Effort</div>
-            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                <div class="bg-amber-500 h-1.5 rounded-full" style="width: 40%"></div>
+            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
+                <div class="bg-amber-500 h-1.5 rounded-full z-10 relative" style="width: 40%"></div>
+                @if(isset($previousReportData))
+                <div class="absolute inset-0 bg-slate-300 dark:bg-slate-700 opacity-30" style="width: 40%"></div>
+                @endif
             </div>
         </div>
 
@@ -93,7 +124,19 @@
                 <div class="text-right">
                     <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Maintainability</span>
                     @if(isset($previousReportData))
-                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['maintainability_index'] }}%</div>
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['technical']['maintainability_index'] }}%</span>
+                        @php
+                            $diff = $reportData['technical']['maintainability_index'] - $previousReportData['technical']['maintainability_index'];
+                        @endphp
+                        @if($diff > 0)
+                            <span class="text-green-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff < 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @else
+                            <span class="text-blue-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_flat</span></span>
+                        @endif
+                    </div>
                     @endif
                 </div>
             </div>
