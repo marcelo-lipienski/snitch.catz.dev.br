@@ -14,7 +14,11 @@ class ReportController extends Controller
         if ($report->status === 'completed') {
             $reportData = $this->resolveReportData($report);
             $history = $report->getHistory();
-            return view('report.details', compact('report', 'reportData', 'history'));
+            $previousReportData = null;
+            if ($report->previous_report_id && $prev = Report::find($report->previous_report_id)) {
+                $previousReportData = $this->resolveReportData($prev);
+            }
+            return view('report.details', compact('report', 'reportData', 'history', 'previousReportData'));
         }
 
         return view('report.show', compact('report'));
@@ -27,7 +31,11 @@ class ReportController extends Controller
         if ($report->status === 'completed') {
             $reportData = $this->resolveReportData($report);
             $history = $report->getHistory();
-            return view('report.business', compact('report', 'reportData', 'history'));
+            $previousReportData = null;
+            if ($report->previous_report_id && $prev = Report::find($report->previous_report_id)) {
+                $previousReportData = $this->resolveReportData($prev);
+            }
+            return view('report.business', compact('report', 'reportData', 'history', 'previousReportData'));
         }
 
         return abort(404, 'Business report not found or analysis not completed.');
@@ -35,39 +43,65 @@ class ReportController extends Controller
 
     public function previewTechnical()
     {
+        $prev = Report::firstOrCreate(
+            ['uuid' => 'preview-uuid-prev'],
+            [
+                'status' => 'completed',
+                'repository_url' => 'https://github.com/example/repo',
+                'commit_hash' => 'prevhash1234567890',
+                'data' => $this->getSampleJsonData(85), // Higher maintainability
+            ]
+        );
+
         $report = Report::firstOrCreate(
             ['uuid' => 'preview-uuid'],
             [
                 'status' => 'completed',
                 'repository_url' => 'https://github.com/example/repo',
                 'commit_hash' => 'abcdef1234567890',
-                'data' => $this->getSampleJsonData(),
+                'data' => $this->getSampleJsonData(78), // Current maintainability
+                'previous_report_id' => $prev->id,
             ]
         );
 
         $reportData = $this->resolveReportData($report);
-        $history = collect([$report]);
-        return view('report.details', compact('report', 'reportData', 'history'));
+        $previousReportData = $this->resolveReportData($prev);
+        $history = $report->getHistory();
+        
+        return view('report.details', compact('report', 'reportData', 'history', 'previousReportData'));
     }
 
     public function previewBusiness()
     {
+        $prev = Report::firstOrCreate(
+            ['uuid' => 'preview-uuid-prev'],
+            [
+                'status' => 'completed',
+                'repository_url' => 'https://github.com/example/repo',
+                'commit_hash' => 'prevhash1234567890',
+                'data' => $this->getSampleJsonData(85),
+            ]
+        );
+
         $report = Report::firstOrCreate(
             ['uuid' => 'preview-uuid'],
             [
                 'status' => 'completed',
                 'repository_url' => 'https://github.com/example/repo',
                 'commit_hash' => 'abcdef1234567890',
-                'data' => $this->getSampleJsonData(),
+                'data' => $this->getSampleJsonData(78),
+                'previous_report_id' => $prev->id,
             ]
         );
 
         $reportData = $this->resolveReportData($report);
-        $history = collect([$report]);
-        return view('report.business', compact('report', 'reportData', 'history'));
+        $previousReportData = $this->resolveReportData($prev);
+        $history = $report->getHistory();
+
+        return view('report.business', compact('report', 'reportData', 'history', 'previousReportData'));
     }
 
-    private function getSampleJsonData()
+    private function getSampleJsonData($maintainability = 78.45)
     {
         return [
             "issues" => [
@@ -104,7 +138,7 @@ class ReportController extends Controller
                 "warning_issues" => 25,
                 "info_issues" => 6
             ],
-            "maintainability_index" => 78.45,
+            "maintainability_index" => $maintainability,
             "instability_index" => 32,
             "avg_halstead_volume" => 452.12,
             "avg_lcom4" => 1.4,

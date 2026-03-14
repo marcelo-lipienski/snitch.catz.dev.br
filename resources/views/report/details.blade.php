@@ -8,20 +8,37 @@
     <!-- Key Indicators -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- System Health -->
-        <div class="bg-white dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span class="material-symbols-outlined text-6xl text-primary">favorite</span>
-            </div>
-            <div class="relative size-28 rounded-full flex items-center justify-center mb-4">
-                <svg class="size-full -rotate-90" viewbox="0 0 100 100">
-                    <circle class="text-slate-100 dark:text-slate-800" cx="50" cy="50" fill="transparent" r="44" stroke="currentColor" stroke-width="8"></circle>
-                    <circle class="text-primary" cx="50" cy="50" fill="transparent" r="44" stroke="currentColor" stroke-dasharray="276" stroke-dashoffset="{{ 276 - (276 * ($reportData['technical']['system_health'] ?? 0) / 100) }}" stroke-width="8" stroke-linecap="round"></circle>
-                </svg>
-                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <span class="text-3xl font-black text-slate-900 dark:text-slate-100">{{ $reportData['technical']['system_health'] }}%</span>
+        <div class="bg-white dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 rounded-lg bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined">favorite</span>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">System Health</span>
+                    @if(isset($previousReportData))
+                    <div class="flex items-center justify-end gap-1 text-[9px] font-bold text-slate-400 mt-0.5">
+                        <span>Prev: {{ $previousReportData['technical']['system_health'] }}%</span>
+                        @php
+                            $diff = $reportData['technical']['system_health'] - $previousReportData['technical']['system_health'];
+                        @endphp
+                        @if($diff > 0)
+                            <span class="text-emerald-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_up</span></span>
+                        @elseif($diff < 0)
+                            <span class="text-rose-500 flex items-center"><span class="material-symbols-outlined text-[10px]">trending_down</span></span>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
-            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">System Health</span>
+            
+            <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['system_health'] }}%</div>
+            <div class="text-xs text-slate-500">System Health Score</div>
+            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
+                <div class="bg-primary h-1.5 rounded-full z-10 relative" style="width: {{ $reportData['technical']['system_health'] }}%"></div>
+                @if(isset($previousReportData))
+                <div class="absolute inset-0 bg-slate-300 dark:bg-slate-700 opacity-30" style="width: {{ $previousReportData['technical']['system_health'] }}%"></div>
+                @endif
+            </div>
         </div>
 
         <!-- Risk Profile -->
@@ -30,12 +47,20 @@
                 <div class="p-2 rounded-lg bg-rose-500/10 text-rose-500">
                     <span class="material-symbols-outlined">gpp_maybe</span>
                 </div>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Risk Profile</span>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Risk Profile</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['risk_profile'] }}</div>
+                    @endif
+                </div>
             </div>
             <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['risk_profile'] }}</div>
             <div class="text-xs text-slate-500">Score: {{ $reportData['technical']['risk_score'] }}/100</div>
-            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                <div class="bg-rose-500 h-1.5 rounded-full" style="width: {{ $reportData['technical']['risk_score'] }}%"></div>
+            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
+                <div class="bg-rose-500 h-1.5 rounded-full z-10 relative" style="width: {{ $reportData['technical']['risk_score'] }}%"></div>
+                @if(isset($previousReportData))
+                <div class="absolute inset-0 bg-slate-300 dark:bg-slate-700 opacity-30" style="width: {{ $previousReportData['technical']['risk_score'] }}%"></div>
+                @endif
             </div>
         </div>
 
@@ -45,7 +70,12 @@
                 <div class="p-2 rounded-lg bg-amber-500/10 text-amber-500">
                     <span class="material-symbols-outlined">hourglass_empty</span>
                 </div>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Debt Recovery</span>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Debt Recovery</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['debt_recovery'] }}</div>
+                    @endif
+                </div>
             </div>
             <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['debt_recovery'] }}</div>
             <div class="text-xs text-slate-500">Estimated Effort</div>
@@ -60,12 +90,20 @@
                 <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
                     <span class="material-symbols-outlined">auto_fix_high</span>
                 </div>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Maintainability</span>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Maintainability</span>
+                    @if(isset($previousReportData))
+                    <div class="text-[9px] font-bold text-slate-400 mt-0.5">Prev: {{ $previousReportData['technical']['maintainability_index'] }}%</div>
+                    @endif
+                </div>
             </div>
             <div class="text-3xl font-black text-slate-900 dark:text-slate-100 mb-1">{{ $reportData['technical']['maintainability_index'] }}%</div>
             <div class="text-xs text-slate-500">Index Score</div>
-            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                <div class="bg-emerald-500 h-1.5 rounded-full" style="width: {{ $reportData['technical']['maintainability_index'] }}%"></div>
+            <div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
+                <div class="bg-emerald-500 h-1.5 rounded-full z-10 relative" style="width: {{ $reportData['technical']['maintainability_index'] }}%"></div>
+                @if(isset($previousReportData))
+                <div class="absolute inset-0 bg-slate-300 dark:bg-slate-700 opacity-30" style="width: {{ $previousReportData['technical']['maintainability_index'] }}%"></div>
+                @endif
             </div>
         </div>
     </div>
