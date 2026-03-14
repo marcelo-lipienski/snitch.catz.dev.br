@@ -26,6 +26,33 @@ class ReportControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Technical Deep Dive');
         $response->assertSee('System Health');
+        $response->assertSee('Analysis History');
+    }
+
+    public function test_show_includes_previous_reports_in_history()
+    {
+        $url = 'https://github.com/test/repo';
+        
+        $report1 = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => $url,
+            'commit_hash' => 'hash1',
+            'status' => 'completed',
+        ]);
+
+        $report2 = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => $url,
+            'commit_hash' => 'hash2',
+            'status' => 'completed',
+            'previous_report_id' => $report1->id,
+        ]);
+
+        $response = $this->get("/report/{$report2->uuid}");
+
+        $response->assertStatus(200);
+        $response->assertSee(substr($report1->commit_hash, 0, 7));
+        $response->assertSee(substr($report2->commit_hash, 0, 7));
     }
 
     public function test_show_maps_snitch_data_correctly()

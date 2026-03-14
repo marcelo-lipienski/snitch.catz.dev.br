@@ -66,21 +66,57 @@
 
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-6 pb-12 z-10">
-        <div class="space-y-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">@yield('header_title')</h2>
-                    <p class="text-slate-500 dark:text-slate-400">@yield('header_description')</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-                        {{ $report->status }}
-                    </span>
-                    <span class="text-sm text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }}</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Sidebar: History -->
+            <div class="lg:col-span-3 space-y-6">
+                <div class="bg-white dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        Analysis History
+                    </h3>
+                    <div class="space-y-4">
+                        @foreach($history ?? [] as $hist)
+                        <a href="{{ route('report.show', $hist->uuid) }}" class="block group">
+                            <div class="flex items-start gap-3 p-3 rounded-xl border {{ $hist->uuid === $report->uuid ? 'bg-primary/5 border-primary/20' : 'border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50' }} transition-all">
+                                <div class="mt-1 flex-shrink-0 size-2 rounded-full {{ $hist->uuid === $report->uuid ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700' }}"></div>
+                                <div class="overflow-hidden">
+                                    <div class="text-xs font-bold {{ $hist->uuid === $report->uuid ? 'text-primary' : 'text-slate-700 dark:text-slate-300' }} truncate mb-0.5">
+                                        {{ substr($hist->commit_hash, 0, 7) }}
+                                    </div>
+                                    <div class="text-[10px] text-slate-500">{{ $hist->created_at->diffForHumans() }}</div>
+                                    @if(isset($hist->data['maintainability_index']))
+                                    <div class="mt-2 flex items-center gap-2">
+                                        <div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                                            <div class="bg-primary h-full" style="width: {{ $hist->data['maintainability_index'] }}%"></div>
+                                        </div>
+                                        <span class="text-[9px] font-black text-slate-400">{{ round($hist->data['maintainability_index']) }}%</span>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </a>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
-            @yield('content')
+            <!-- Report Content -->
+            <div class="lg:col-span-9 space-y-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 dark:text-slate-100">@yield('header_title')</h2>
+                        <p class="text-slate-500 dark:text-slate-400">@yield('header_description')</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                            {{ $report->status }}
+                        </span>
+                        <span class="text-sm text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }}</span>
+                    </div>
+                </div>
+
+                @yield('content')
+            </div>
         </div>
     </main>
 

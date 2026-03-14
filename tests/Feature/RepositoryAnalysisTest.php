@@ -184,4 +184,34 @@ class RepositoryAnalysisTest extends TestCase
             return $job->report->id === $newReport->id;
         });
     }
+
+    public function test_analyze_links_to_previous_report(): void
+    {
+        Queue::fake();
+        $url = 'https://github.com/laravel/laravel';
+        $oldHash = 'old-hash';
+        $newHash = 'new-hash';
+        
+        $oldReport = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => $url,
+            'commit_hash' => $oldHash,
+            'status' => 'completed',
+        ]);
+
+        Process::fake([
+            '*' => function ($process) use ($newHash) {
+                if (str_contains(implode(' ', $process->command), 'ls-remote')) {
+                    return Process::result("{$newHash}\tHEAD", '', 0);
+                }
+                return Process::result('', '', 0);
+            },
+        ]);
+
+        $this->postJson('/analyze', ['url' => $url]);
+
+        $newReport = Report::where('commit_hash', $newHash)->first();
+        $this->assertNotNull($newReport);
+        $this->assertEquals($oldReport->id, $newReport->previous_report_id);
+    }
 }

@@ -59,12 +59,18 @@ class RepositoryController extends Controller
                 ]);
             }
 
+            // Find the most recent previous report for this repository
+            $lastReport = Report::where('repository_url', $url)
+                ->latest()
+                ->first();
+
             try {
                 $report = Report::create([
                     'uuid' => (string) Str::uuid(),
                     'repository_url' => $url,
                     'commit_hash' => $commitHash,
                     'status' => 'pending',
+                    'previous_report_id' => $lastReport?->id,
                 ]);
             } catch (UniqueConstraintViolationException $e) {
                 // Handle race condition: if another request created the report just now
