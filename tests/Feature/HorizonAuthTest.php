@@ -13,25 +13,11 @@ class HorizonAuthTest extends TestCase
     public function test_horizon_is_accessible_in_local_environment()
     {
         $this->app['env'] = 'local';
-        config(['horizon.auth.always_auth' => false]);
         
         $response = $this->get('/horizon');
 
         $response->assertStatus(200);
         $response->assertSee('Horizon');
-    }
-
-    public function test_horizon_can_be_protected_in_local_environment_with_always_auth()
-    {
-        $this->app['env'] = 'local';
-        config(['horizon.auth.always_auth' => true]);
-        config(['horizon.auth.user' => 'admin']);
-        config(['horizon.auth.password' => 'password']);
-        
-        $response = $this->get('/horizon');
-
-        $response->assertStatus(401);
-        $response->assertHeader('WWW-Authenticate');
     }
 
     public function test_horizon_is_protected_by_basic_auth_in_production()

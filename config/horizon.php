@@ -46,7 +46,6 @@ return [
     'auth' => [
         'user' => env('HORIZON_USER'),
         'password' => env('HORIZON_PASSWORD'),
-        'always_auth' => env('HORIZON_ALWAYS_AUTH', false),
     ],
 
     /*
