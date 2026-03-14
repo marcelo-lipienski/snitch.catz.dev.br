@@ -13,7 +13,7 @@
 
       gtag('config', 'G-0DN83YGKTX');
     </script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
@@ -74,6 +74,7 @@
                     <p class="text-slate-500 dark:text-slate-400">@yield('header_description')</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    @stack('header_actions')
                     <span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
                         {{ $report->status }}
                     </span>

@@ -41,6 +41,19 @@ class ReportController extends Controller
         return abort(404, 'Business report not found or analysis not completed.');
     }
 
+    public function architecture($uuid)
+    {
+        $report = Report::where('uuid', $uuid)->firstOrFail();
+
+        if ($report->status === 'completed') {
+            $reportData = $this->resolveReportData($report);
+            $markdown = $reportData['technical']['architecture_suggestion'] ?? '# No architecture suggestion available.';
+            return view('report.architecture', compact('report', 'markdown'));
+        }
+
+        return abort(404, 'Architecture suggestion not found or analysis not completed.');
+    }
+
     public function previewTechnical()
     {
         $prev = Report::firstOrCreate(
@@ -99,6 +112,23 @@ class ReportController extends Controller
         $history = $report->getHistory();
 
         return view('report.business', compact('report', 'reportData', 'history', 'previousReportData'));
+    }
+
+    public function previewArchitecture()
+    {
+        $report = Report::firstOrCreate(
+            ['uuid' => 'preview-uuid'],
+            [
+                'status' => 'completed',
+                'repository_url' => 'https://github.com/example/repo',
+                'commit_hash' => 'abcdef1234567890',
+                'data' => $this->getSampleJsonData(78),
+            ]
+        );
+
+        $reportData = $this->resolveReportData($report);
+        $markdown = $reportData['technical']['architecture_suggestion'] ?? '# No architecture suggestion available.';
+        return view('report.architecture', compact('report', 'markdown'));
     }
 
     private function getSampleJsonData($maintainability = 78.45)
@@ -277,6 +307,7 @@ class ReportController extends Controller
                 'duplication_score' => count($data['duplications'] ?? []),
                 'findings' => $groupedFindings,
                 'file_tree' => $this->buildFileTree($groupedFindings),
+                'architecture_suggestion' => $data['architecture_suggestion'] ?? $this->getDefaultArchitectureSuggestion(),
             ],
             'business' => [
                 'summary' => $this->generateSummary($data),
@@ -313,6 +344,29 @@ class ReportController extends Controller
         $debt = $data['total_debt_hours'] ?? 0;
 
         return "The current strategic assessment of the codebase reveals a system health rating of {$health}% with a {$risk} overall risk profile. The organization is currently carrying {$debt} hours of \"Technical Interest,\" which is exerting pressure on roadmap throughput.";
+    }
+
+    private function getDefaultArchitectureSuggestion()
+    {
+        return <<<MARKDOWN
+# Suggested ARCHITECTURE.md
+
+## Overview
+This document outlines the intended architectural patterns and principles for this project.
+
+## Core Principles
+- **Separation of Concerns**: Each component should have a single responsibility.
+- **Dependency Inversion**: High-level modules should not depend on low-level modules.
+- **Maintainability**: Code should be easy to read and evolve.
+
+## Proposed Structure
+- `app/Core`: Essential business logic and entities.
+- `app/Features`: Feature-specific implementations.
+- `app/Infrastructure`: External integrations (DB, API, etc).
+
+## Technical Debt Areas
+Based on current analysis, focus on reducing complexity in high-churn files.
+MARKDOWN;
     }
 
     private function getEmptyDataStructure()

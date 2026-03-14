@@ -207,4 +207,23 @@ class ReportControllerTest extends TestCase
         $response->assertSee('Business Insights');
         $response->assertSee('Strategic Executive Summary');
     }
+
+    public function test_architecture_route_serves_architecture_view()
+    {
+        $report = Report::create([
+            'uuid' => (string) Str::uuid(),
+            'repository_url' => 'https://github.com/test/repo',
+            'commit_hash' => 'hash123',
+            'status' => 'completed',
+            'data' => [
+                'architecture_suggestion' => '# Test Architecture'
+            ]
+        ]);
+
+        $response = $this->get("/report/{$report->uuid}/architecture");
+
+        $response->assertStatus(200);
+        $response->assertSee('Suggested ARCHITECTURE.md');
+        $response->assertSee('Test Architecture');
+    }
 }

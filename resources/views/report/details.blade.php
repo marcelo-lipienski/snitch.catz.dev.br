@@ -4,6 +4,13 @@
 @section('header_title', 'Technical Deep Dive')
 @section('header_description', 'In-depth analysis of code patterns, architecture, and technical debt.')
 
+@push('header_actions')
+<a href="{{ route('report.architecture', $report->uuid) }}" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-primary/10 hover:text-primary transition-all border border-slate-200 dark:border-slate-700">
+    <span class="material-symbols-outlined text-sm">description</span>
+    ARCHITECTURE.md
+</a>
+@endpush
+
 @section('content')
     <!-- Key Indicators -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
