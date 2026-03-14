@@ -43,6 +43,11 @@ return [
 
     'path' => env('HORIZON_PATH', 'horizon'),
 
+    'auth' => [
+        'user' => env('HORIZON_USER'),
+        'password' => env('HORIZON_PASSWORD'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Horizon Redis Connection

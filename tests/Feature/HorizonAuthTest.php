@@ -26,8 +26,8 @@ class HorizonAuthTest extends TestCase
         config(['app.env' => 'production']);
         
         // Mock env variables for the middleware
-        putenv('HORIZON_USER=admin');
-        putenv('HORIZON_PASSWORD=password');
+        config(['horizon.auth.user' => 'admin']);
+        config(['horizon.auth.password' => 'password']);
 
         $response = $this->get('/horizon');
 
@@ -40,8 +40,8 @@ class HorizonAuthTest extends TestCase
         $this->app['env'] = 'production';
         config(['app.env' => 'production']);
         
-        putenv('HORIZON_USER=admin');
-        putenv('HORIZON_PASSWORD=password');
+        config(['horizon.auth.user' => 'admin']);
+        config(['horizon.auth.password' => 'password']);
 
         $response = $this->get('/horizon', [
             'PHP_AUTH_USER' => 'admin',
@@ -57,8 +57,8 @@ class HorizonAuthTest extends TestCase
         $this->app['env'] = 'production';
         config(['app.env' => 'production']);
         
-        putenv('HORIZON_USER=admin');
-        putenv('HORIZON_PASSWORD=password');
+        config(['horizon.auth.user' => 'admin']);
+        config(['horizon.auth.password' => 'password']);
 
         $response = $this->get('/horizon', [
             'PHP_AUTH_USER' => 'wrong',
