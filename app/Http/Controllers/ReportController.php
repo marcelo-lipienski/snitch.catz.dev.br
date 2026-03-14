@@ -235,7 +235,8 @@ class ReportController extends Controller
                 "security_risk" => 80,
                 "rating" => "Moderate"
             ],
-            "dependency_graph" => "graph TD\n  A[Auth/Manager] --> B[Core/Container]\n  A --> C[Utils/Helper]\n  D[UI/Dashboard] --> A"
+            "dependency_graph" => "graph TD\n  A[Auth/Manager] --> B[Core/Container]\n  A --> C[Utils/Helper]\n  D[UI/Dashboard] --> A",
+            "architecture_md" => $this->getDefaultArchitectureSuggestion()
         ];
     }
 
@@ -307,7 +308,7 @@ class ReportController extends Controller
                 'duplication_score' => count($data['duplications'] ?? []),
                 'findings' => $groupedFindings,
                 'file_tree' => $this->buildFileTree($groupedFindings),
-                'architecture_suggestion' => $data['architecture_suggestion'] ?? $this->getDefaultArchitectureSuggestion(),
+                'architecture_suggestion' => $data['architecture_md'] ?? $data['architecture_suggestion'] ?? $this->getDefaultArchitectureSuggestion(),
             ],
             'business' => [
                 'summary' => $this->generateSummary($data),

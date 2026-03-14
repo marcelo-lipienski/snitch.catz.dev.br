@@ -216,7 +216,7 @@ class ReportControllerTest extends TestCase
             'commit_hash' => 'hash123',
             'status' => 'completed',
             'data' => [
-                'architecture_suggestion' => '# Test Architecture'
+                'architecture_md' => '# Test Architecture'
             ]
         ]);
 
