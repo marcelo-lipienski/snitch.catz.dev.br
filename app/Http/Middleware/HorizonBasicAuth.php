@@ -19,10 +19,11 @@ class HorizonBasicAuth
             return $next($request);
         }
 
-        $username = env('HORIZON_USER');
-        $password = env('HORIZON_PASSWORD');
+        $username = config('horizon.auth.user');
+        $password = config('horizon.auth.password');
 
         if (empty($username) || empty($password)) {
+            \Illuminate\Support\Facades\Log::warning('Horizon Basic Auth: Credentials not configured.');
             return response('Horizon credentials not configured.', 500);
         }
 
