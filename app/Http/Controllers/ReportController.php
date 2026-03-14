@@ -13,7 +13,8 @@ class ReportController extends Controller
 
         if ($report->status === 'completed') {
             $reportData = $this->resolveReportData($report);
-            return view('report.details', compact('report', 'reportData'));
+            $history = $report->getHistory();
+            return view('report.details', compact('report', 'reportData', 'history'));
         }
 
         return view('report.show', compact('report'));
@@ -25,7 +26,8 @@ class ReportController extends Controller
 
         if ($report->status === 'completed') {
             $reportData = $this->resolveReportData($report);
-            return view('report.business', compact('report', 'reportData'));
+            $history = $report->getHistory();
+            return view('report.business', compact('report', 'reportData', 'history'));
         }
 
         return abort(404, 'Business report not found or analysis not completed.');
@@ -33,30 +35,36 @@ class ReportController extends Controller
 
     public function previewTechnical()
     {
-        $report = new Report([
-            'uuid' => 'preview-uuid',
-            'status' => 'completed',
-            'repository_url' => 'https://github.com/example/repo',
-            'commit_hash' => 'abcdef1234567890',
-            'data' => $this->getSampleJsonData(),
-        ]);
+        $report = Report::firstOrCreate(
+            ['uuid' => 'preview-uuid'],
+            [
+                'status' => 'completed',
+                'repository_url' => 'https://github.com/example/repo',
+                'commit_hash' => 'abcdef1234567890',
+                'data' => $this->getSampleJsonData(),
+            ]
+        );
 
         $reportData = $this->resolveReportData($report);
-        return view('report.details', compact('report', 'reportData'));
+        $history = collect([$report]);
+        return view('report.details', compact('report', 'reportData', 'history'));
     }
 
     public function previewBusiness()
     {
-        $report = new Report([
-            'uuid' => 'preview-uuid',
-            'status' => 'completed',
-            'repository_url' => 'https://github.com/example/repo',
-            'commit_hash' => 'abcdef1234567890',
-            'data' => $this->getSampleJsonData(),
-        ]);
+        $report = Report::firstOrCreate(
+            ['uuid' => 'preview-uuid'],
+            [
+                'status' => 'completed',
+                'repository_url' => 'https://github.com/example/repo',
+                'commit_hash' => 'abcdef1234567890',
+                'data' => $this->getSampleJsonData(),
+            ]
+        );
 
         $reportData = $this->resolveReportData($report);
-        return view('report.business', compact('report', 'reportData'));
+        $history = collect([$report]);
+        return view('report.business', compact('report', 'reportData', 'history'));
     }
 
     private function getSampleJsonData()
