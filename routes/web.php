@@ -4,8 +4,15 @@ use App\Http\Controllers\RepositoryController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
+use App\Models\Report;
+
 Route::get('/', function () {
-    return view('welcome');
+    $latestReports = Report::where('status', 'completed')
+        ->latest()
+        ->take(5)
+        ->get();
+
+    return view('welcome', compact('latestReports'));
 });
 
 Route::post('/analyze', [RepositoryController::class, 'analyze']);
