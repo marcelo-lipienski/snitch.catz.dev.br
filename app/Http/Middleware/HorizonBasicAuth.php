@@ -15,7 +15,9 @@ class HorizonBasicAuth
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (app()->environment('local')) {
+        \Illuminate\Support\Facades\Log::debug('Horizon Basic Auth Hit: ' . $request->fullUrl());
+
+        if (app()->environment('local') && !config('horizon.auth.always_auth', false)) {
             return $next($request);
         }
 
