@@ -153,4 +153,22 @@ class ReportControllerTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_preview_technical_serves_details_view()
+    {
+        $response = $this->get("/report/preview/technical");
+
+        $response->assertStatus(200);
+        $response->assertSee('Technical Deep Dive');
+        $response->assertSee('Manager.php');
+    }
+
+    public function test_preview_business_serves_business_view()
+    {
+        $response = $this->get("/report/preview/business");
+
+        $response->assertStatus(200);
+        $response->assertSee('Business Insights');
+        $response->assertSee('Strategic Executive Summary');
+    }
 }
