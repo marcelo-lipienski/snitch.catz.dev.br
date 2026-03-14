@@ -31,6 +31,142 @@ class ReportController extends Controller
         return abort(404, 'Business report not found or analysis not completed.');
     }
 
+    public function previewTechnical()
+    {
+        $report = new Report([
+            'uuid' => 'preview-uuid',
+            'status' => 'completed',
+            'repository_url' => 'https://github.com/example/repo',
+            'commit_hash' => 'abcdef1234567890',
+            'data' => $this->getSampleJsonData(),
+        ]);
+
+        $reportData = $this->resolveReportData($report);
+        return view('report.details', compact('report', 'reportData'));
+    }
+
+    public function previewBusiness()
+    {
+        $report = new Report([
+            'uuid' => 'preview-uuid',
+            'status' => 'completed',
+            'repository_url' => 'https://github.com/example/repo',
+            'commit_hash' => 'abcdef1234567890',
+            'data' => $this->getSampleJsonData(),
+        ]);
+
+        $reportData = $this->resolveReportData($report);
+        return view('report.business', compact('report', 'reportData'));
+    }
+
+    private function getSampleJsonData()
+    {
+        return [
+            "issues" => [
+                [
+                    "file" => "src/Auth/Manager.php",
+                    "full_path" => "/home/user/project/src/Auth/Manager.php",
+                    "line" => 42,
+                    "end_line" => 45,
+                    "message" => "Potential SQL injection in query building. Use prepared statements instead.",
+                    "severity" => "critical",
+                    "rule" => "security/sql-injection",
+                    "snippet" => '$query = "SELECT * FROM users WHERE id = " . $id;',
+                    "snippet_start_line" => 41,
+                    "path" => [
+                        ["file" => "src/Auth/Manager.php", "line" => 12, "snippet" => '$id = $_GET[\'id\'];'],
+                        ["file" => "src/Auth/Manager.php", "line" => 42, "snippet" => '$query = "SELECT * FROM users WHERE id = " . $id;']
+                    ]
+                ],
+                [
+                    "file" => "src/Utils/Helper.php",
+                    "line" => 156,
+                    "message" => "Deeply nested code detected (level 5). Consider refactoring.",
+                    "severity" => "warning",
+                    "rule" => "architecture/deep-nesting",
+                    "snippet" => "if (\$a) { if (\$b) { if (\$c) { if (\$d) { if (\$e) { ... } } } } }"
+                ]
+            ],
+            "stats" => [
+                "files_analyzed" => 124,
+                "total_lines" => 15420,
+                "total_issues" => 42,
+                "critical_issues" => 3,
+                "error_issues" => 8,
+                "warning_issues" => 25,
+                "info_issues" => 6
+            ],
+            "maintainability_index" => 78.45,
+            "instability_index" => 32,
+            "avg_halstead_volume" => 452.12,
+            "avg_lcom4" => 1.4,
+            "security_issue_count" => 5,
+            "debt_score" => 12.5,
+            "total_debt_hours" => 24.5,
+            "issue_counts_by_category" => [
+                "security" => 5,
+                "architecture" => 12,
+                "complexity" => 8,
+                "style" => 17
+            ],
+            "duplications" => [
+                [
+                    "files" => ["src/Service/OrderService.php", "src/Service/InvoiceService.php"],
+                    "lines" => 35
+                ]
+            ],
+            "file_churn" => [
+                "src/Auth/Manager.php" => 85,
+                "src/UI/Dashboard.php" => 42,
+                "src/Core/Container.php" => 12
+            ],
+            "hotspots" => [
+                [
+                    "file" => "src/Auth/Manager.php",
+                    "churn" => 85,
+                    "complexity" => 142,
+                    "risk_score" => 92.4,
+                    "risk_level" => "Critical",
+                    "churn_level" => "Volatile",
+                    "impact_nodes" => [
+                        [
+                            "file" => "src/Auth/Manager.php",
+                            "line" => 42,
+                            "snippet" => "public function authenticate(\$id)",
+                            "variable" => "\$id",
+                            "type" => "variable"
+                        ]
+                    ]
+                ]
+            ],
+            "test_coverage_ratio" => 0.824,
+            "line_coverage" => [
+                "total_statements" => 12000,
+                "covered_statements" => 9888,
+                "percentage" => 82.4
+            ],
+            "coverage_lines" => [
+                "src/Auth/Manager.php" => [1, 2, 3, 5, 6, 10, 11, 12, 40, 41, 42],
+                "src/Utils/Helper.php" => [5, 6, 7, 8, 9, 20, 21]
+            ],
+            "complexity_distribution" => [
+                "1-5" => 85,
+                "6-10" => 24,
+                "11-20" => 10,
+                "21+" => 5
+            ],
+            "risk_profile" => [
+                "score" => 65,
+                "bug_propensity" => 45,
+                "mttr_score" => 12.2,
+                "onboarding_difficulty" => 75,
+                "security_risk" => 80,
+                "rating" => "Moderate"
+            ],
+            "dependency_graph" => "graph TD\n  A[Auth/Manager] --> B[Core/Container]\n  A --> C[Utils/Helper]\n  D[UI/Dashboard] --> A"
+        ];
+    }
+
     private function buildFileTree($findings)
     {
         $tree = [];
@@ -113,9 +249,9 @@ class ReportController extends Controller
                 ],
                 'technical_interest' => [
                     ['label' => 'Architecture', 'value' => $issueCounts['architecture'] ?? 0, 'blocks' => ($issueCounts['architecture'] ?? 0) * 2],
-                    ['label' => 'Clean Code', 'value' => $issueCounts['clean-code'] ?? 0, 'blocks' => ($issueCounts['clean-code'] ?? 0) * 2],
-                    ['label' => 'Code Smell', 'value' => $issueCounts['code-smell'] ?? 0, 'blocks' => ($issueCounts['code-smell'] ?? 0) * 2],
-                    ['label' => 'Type Safety', 'value' => $issueCounts['type-safety'] ?? 0, 'blocks' => ($issueCounts['type-safety'] ?? 0) * 2],
+                    ['label' => 'Clean Code', 'value' => $issueCounts['style'] ?? 0, 'blocks' => ($issueCounts['style'] ?? 0) * 2],
+                    ['label' => 'Code Smell', 'value' => $issueCounts['complexity'] ?? 0, 'blocks' => ($issueCounts['complexity'] ?? 0) * 2],
+                    ['label' => 'Type Safety', 'value' => $issueCounts['security'] ?? 0, 'blocks' => ($issueCounts['security'] ?? 0) * 2],
                 ],
                 'hotspots' => array_map(function($hotspot) {
                     return [
