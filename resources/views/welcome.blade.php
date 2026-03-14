@@ -142,7 +142,39 @@
             <div id="error-message" class="text-red-500 text-sm mt-2 hidden text-left w-full max-w-4xl px-2">
                 Invalid link
             </div>
-            <!-- Social Proof / Support -->
+            <!-- Public Reports -->
+            @if($latestReports->isNotEmpty())
+            <div class="mt-16 w-full max-w-4xl">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2 justify-center">
+                    <span class="material-symbols-outlined text-sm">public</span>
+                    Latest Public Analyses
+                </h3>
+                <div class="grid grid-cols-1 gap-4">
+                    @foreach($latestReports as $report)
+                    <a href="{{ route('report.show', $report->uuid) }}" class="group bg-white dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800 transition-all flex items-center justify-between shadow-sm hover:shadow-md">
+                        <div class="flex items-center gap-4 overflow-hidden">
+                            <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/5 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined">folder</span>
+                            </div>
+                            <div class="text-left overflow-hidden">
+                                <div class="font-bold text-slate-900 dark:text-slate-100 truncate">{{ $report->repository_url }}</div>
+                                <div class="text-xs text-slate-500 font-mono">{{ substr($report->commit_hash, 0, 7) }} • {{ $report->created_at->diffForHumans() }}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 flex-shrink-0 ml-4">
+                            @if(isset($report->data['maintainability_index']))
+                            <div class="text-right">
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Health</div>
+                                <div class="text-sm font-black text-primary">{{ round($report->data['maintainability_index']) }}%</div>
+                            </div>
+                            @endif
+                            <span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </main>
     <!-- Feature Grid -->
